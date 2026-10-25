@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lump Sculpture Studio | Turn a space into a place</title>
+    <meta name="description" content="Lump Sculpture Studio designs and fabricates sculpture for homes and public spaces in Melbourne." />
+  </head>
+  <body>
+    <header class="nav">
+      <a class="nav__brand" href="#">Lump</a>
+      <nav class="nav__links" aria-label="Main">
+        <a href="#">Commercial</a>
+        <a href="#">Residential</a>
+        <a href="#">Art Fabrication</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="hero__copy">
+          <h1 id="hero-title">Turn a space<br />into a place.</h1>
+          <p class="hero__sub">
+            Somewhere to <span class="hero__rotate" data-rotate="give directions by|meet at|come home to" aria-live="polite"></span>
+          </p>
+          <a class="hero__cta" href="#">Creating a place? <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
