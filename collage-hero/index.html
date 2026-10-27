@@ -132,6 +132,7 @@
       <div class="scene" aria-hidden="true">
         <canvas class="layer water" hidden></canvas>
         <img class="layer" data-gl="base" src="assets/base.webp" alt="">
+        <img class="layer" data-l="waterfall" data-gl="waterfall" src="assets/waterfall.webp" alt="">
         <img class="layer" data-l="reflection" data-gl="reflection" src="assets/sculpture-reflection.webp" alt="">
         <img class="layer" data-l="sculpture" src="assets/sculpture.webp" alt="">
         <img class="layer" data-l="boardwalk" src="assets/boardwalk.webp" alt="">
@@ -176,6 +177,7 @@
     boardwalk: { t: [0.38, 0.60], x: 62,  y: 12, rot: 4,  fade: false },
     sculpture: { t: [0.58, 0.88], x: 0,   y: -105, rot: -2, fade: false },
     reflection:{ t: [0.58, 0.80], x: 0,   y: 18, rot: 0,  fade: true },
+    waterfall: { t: [0.46, 0.62], x: 0,   y: 0,  rot: 0,  fade: true },
     copy:      { t: [0.56, 0.74], x: 0,   y: -40, rot: 0, fade: true, px: true },
     hint:      { t: [0.00, 0.06], x: 0,   y: 0,  rot: 0,  fade: true, keepX: true },
   };
@@ -210,7 +212,9 @@
     if (water) {
       const s = plan.reflection;
       const t = ease(clamp((current - s.t[0]) / (s.t[1] - s.t[0]), 0, 1));
-      if (hero.getBoundingClientRect().bottom > 0) water.render(now / 1000, s.y / 100 * t, 1 - t);
+      const f = plan.waterfall;
+      const ft = ease(clamp((current - f.t[0]) / (f.t[1] - f.t[0]), 0, 1));
+      if (hero.getBoundingClientRect().bottom > 0) water.render(now / 1000, s.y / 100 * t, 1 - t, 1 - ft);
     }
     requestAnimationFrame(tick);
   }
@@ -229,9 +233,36 @@
       void main(){ vUv = vec2(p.x*.5+.5, .5-p.y*.5); gl_Position = vec4(p,0.,1.); }`;
     const fs = `precision mediump float;
       varying vec2 vUv;
-      uniform sampler2D uBase, uRefl, uMask;
-      uniform float uTime, uReflY, uReflA, uAspect;
+      uniform sampler2D uBase, uRefl, uMask, uFall;
+      uniform float uTime, uReflY, uReflA, uAspect, uFallA;
       uniform vec4 uRip[8];
+      const float WATERLINE = 0.6915;           // where the waterfall meets the pond
+      const vec2 PX = vec2(1./2688., 1./1520.);
+      float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
+        return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
+      // Falling water: the outline stays put, the white streaks inside it flow down.
+      vec4 fall(vec2 uv){
+        if (uFallA <= 0.001) return vec4(0.);
+        float a0 = (texture2D(uFall, uv).a*2. + texture2D(uFall, uv+vec2(2.,0.)*PX).a + texture2D(uFall, uv-vec2(2.,0.)*PX).a
+                  + texture2D(uFall, uv-vec2(0.,3.)*PX).a) / 5.;
+        if (a0 < 0.01) return vec4(0.);
+        float speed = .55, L = 46. * PX.y;
+        float p1 = fract(uTime * speed), p2 = fract(uTime * speed + .5);
+        vec4 s1 = texture2D(uFall, uv - vec2(0., p1 * L));
+        vec4 s2 = texture2D(uFall, uv - vec2(0., p2 * L));
+        float w1 = 1. - abs(2.*p1 - 1.);
+        vec4 fl = s1 * w1 + s2 * (1. - w1);
+        float lum = dot(fl.rgb, vec3(.299, .587, .114)) * fl.a;
+        // thin vertical streaks drifting down
+        float streak = noise(vec2(uv.x * 2688. / 5., (uv.y - uTime * .09) * 1520. / 70.));
+        float thin = 1. - uFallA;
+        float w = smoothstep(.28 + thin*.5, .72 + thin*.25, lum) * mix(.8, 1.15, streak);
+        // a little churn where it lands
+        float churn = smoothstep(.62, .69, uv.y) * noise(vec2(uv.x * 400., uv.y * 300. - uTime * 6.));
+        vec3 c = mix(vec3(.93, .96, .97), fl.rgb, .2) + churn * .08;
+        return vec4(c, clamp(a0 * (w + churn * .35) * uFallA, 0., 1.));
+      }
       void main(){
         vec2 uv = vUv;
         float m = texture2D(uMask, uv).r;
@@ -259,6 +290,13 @@
           vec4 rc = texture2D(uRefl, ruv);
           col = mix(col, rc.rgb, rc.a * uReflA);
         }
+        // waterfall, and its flipped reflection in the pond
+        vec4 wf = fall(uv);
+        col = mix(col, wf.rgb, wf.a);
+        if (uv.y > WATERLINE) {
+          vec4 wr = fall(vec2(suv.x, 2. * WATERLINE - suv.y));
+          col = mix(col, wr.rgb * .92, wr.a * .32 * m);
+        }
         col += glint * .05 * m;
         gl_FragColor = vec4(col, 1.);
       }`;
@@ -276,7 +314,7 @@
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const U = n => gl.getUniformLocation(prog, n);
-    const u = { time: U('uTime'), reflY: U('uReflY'), reflA: U('uReflA'), aspect: U('uAspect'), rip: U('uRip') };
+    const u = { time: U('uTime'), reflY: U('uReflY'), reflA: U('uReflA'), aspect: U('uAspect'), rip: U('uRip'), fallA: U('uFallA') };
     gl.uniform1f(u.aspect, 2688 / 1520);
 
     let loaded = 0, ready = false;
@@ -290,7 +328,7 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.uniform1i(U(name), unit);
-        if (++loaded === 3) {
+        if (++loaded === 4) {
           ready = true; canvas.hidden = false;
           document.querySelectorAll('[data-gl]').forEach(el => el.style.visibility = 'hidden');
         }
@@ -300,6 +338,7 @@
     tex(0, 'uBase', 'assets/base.webp');
     tex(1, 'uRefl', 'assets/sculpture-reflection.webp');
     tex(2, 'uMask', 'assets/pond-mask.png');
+    tex(3, 'uFall', 'assets/waterfall.webp');
 
     function size() {
       const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -321,15 +360,17 @@
       if (lastPt && Math.hypot(x - lastPt[0], y - lastPt[1]) < 0.012) return;
       lastAdd = clock; lastPt = [x, y]; addRipple(x, y, 0.8);
     });
-    let nextDrop = 1.5;
+    let nextDrop = 1.5, nextSplash = 0.5;
 
     return {
-      render(t, reflY, reflA) {
+      render(t, reflY, reflA, fallA) {
         if (!ready) return;
         clock = t;
         if (t > nextDrop) { addRipple(0.15 + Math.random() * 0.7, 0.75 + Math.random() * 0.2, 0.45); nextDrop = t + 2 + Math.random() * 3; }
+        // soft rings where the waterfall lands, while it's running
+        if (fallA > 0.2 && t > nextSplash) { addRipple(0.165 + Math.random() * 0.1, 0.705, 0.28 * fallA); nextSplash = t + 0.9 + Math.random() * 0.8; }
         size();
-        gl.uniform1f(u.time, t); gl.uniform1f(u.reflY, reflY); gl.uniform1f(u.reflA, reflA);
+        gl.uniform1f(u.time, t); gl.uniform1f(u.reflY, reflY); gl.uniform1f(u.reflA, reflA); gl.uniform1f(u.fallA, fallA);
         gl.uniform4fv(u.rip, rips);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
