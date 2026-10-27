@@ -43,13 +43,9 @@
   /* ---------- Hero ---------- */
   .hero { position: relative; height: 420vh; }
   .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--sky); }
-  .scene {
-    position: absolute; left: 50%; top: 50%;
-    width: max(100vw, calc(100svh * 2688 / 1520));
-    aspect-ratio: 2688 / 1520;
-    max-width: none;
-    transform: translate(-50%, -50%);
-  }
+  /* Size and position are set in script so the sculpture sits right of centre on any screen */
+  .scene { position: absolute; left: 0; top: 0; width: 100vw; aspect-ratio: 2688 / 1520; max-width: none; }
+  .sky-ext { position: absolute; left: 0; bottom: 100%; width: 100%; height: auto; max-width: none; display: block; pointer-events: none; }
   .layer {
     position: absolute; inset: 0; width: 100%; height: 100%;
     max-width: none; display: block; pointer-events: none; user-select: none;
@@ -128,6 +124,7 @@
   <section class="hero" aria-labelledby="hero-title">
     <div class="stage">
       <div class="scene" aria-hidden="true">
+        <img class="sky-ext" src="assets/sky-extension.webp" alt="">
         <img class="layer" src="assets/base.webp" alt="">
         <img class="layer" data-l="reflection" src="assets/sculpture-reflection.webp" alt="">
         <img class="layer" data-l="sculpture" src="assets/sculpture.webp" alt="">
@@ -176,6 +173,24 @@
     copy:      { t: [0.56, 0.74], x: 0,   y: -40, rot: 0, fade: true, px: true },
     hint:      { t: [0.00, 0.06], x: 0,   y: 0,  rot: 0,  fade: true, keepX: true },
   };
+  // Composition: sculpture right of centre, scene dropped to show more sky, sculpture 5% larger.
+  const COMP = { focusX: 0.531, screenX: 0.57, drop: 0.15, sculptScale: 1.05 };
+  const W0 = 2688, H0 = 1520;
+  const scene = document.querySelector('.scene');
+  function layout() {
+    const W = innerWidth, H = document.querySelector('.stage').clientHeight;
+    // big enough to cover the screen, and to keep the left edge covered once the sculpture is shifted right
+    const s = Math.max(W / W0, H / H0, (COMP.screenX * W) / (COMP.focusX * W0));
+    const sw = W0 * s, sh = H0 * s;
+    const left = COMP.screenX * W - COMP.focusX * sw;
+    const top = (H - sh) / 2 + COMP.drop * H;
+    Object.assign(scene.style, { width: sw + 'px', left: left + 'px', top: top + 'px' });
+  }
+  addEventListener('resize', layout);
+  layout();
+  els.sculpture.style.transformOrigin = '53.1% 61.8%';
+  els.reflection.style.transformOrigin = '53.6% 68.9%';
+
   const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;   // easeInOutCubic
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
@@ -192,7 +207,8 @@
       const t = ease(clamp((p - s.t[0]) / (s.t[1] - s.t[0]), 0, 1));
       const unit = s.px ? 'px' : '%';
       const base = s.keepX ? 'translateX(-50%) ' : '';
-      el.style.transform = `${base}translate(${s.x * t}${unit}, ${s.y * t}${unit}) rotate(${s.rot * t}deg)`;
+      const grow = (k === 'sculpture' || k === 'reflection') ? ` scale(${COMP.sculptScale})` : '';
+      el.style.transform = `${base}translate(${s.x * t}${unit}, ${s.y * t}${unit}) rotate(${s.rot * t}deg)${grow}`;
       if (s.fade) el.style.opacity = String(1 - t);
     }
   }
