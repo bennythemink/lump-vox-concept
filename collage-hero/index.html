@@ -89,6 +89,7 @@
   .cta:focus-visible, .nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
   .water { z-index: 0; }
+  .bird { fill: none; stroke: #24343b; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; opacity: .78; }
 
   .hint {
     position: absolute; z-index: 10; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px));
@@ -134,6 +135,10 @@
         <img class="layer" data-gl="base" src="assets/base.webp" alt="">
         <img class="layer" data-l="waterfall" data-gl="waterfall" src="assets/waterfall.webp" alt="">
         <img class="layer" data-l="reflection" data-gl="reflection" src="assets/sculpture-reflection.webp" alt="">
+        <svg class="layer birds" data-l="birds" viewBox="0 0 2688 1520" preserveAspectRatio="none" aria-hidden="true">
+          <path class="bird" d=""></path>
+          <path class="bird" d=""></path>
+        </svg>
         <img class="layer" data-l="sculpture" src="assets/sculpture.webp" alt="">
         <img class="layer" data-l="boardwalk" src="assets/boardwalk.webp" alt="">
         <img class="layer" data-l="family" src="assets/family.webp" alt="">
@@ -178,6 +183,7 @@
     sculpture: { t: [0.58, 0.88], x: 0,   y: -105, rot: -2, fade: false },
     reflection:{ t: [0.58, 0.80], x: 0,   y: 18, rot: 0,  fade: true },
     waterfall: { t: [0.46, 0.62], x: 0,   y: 0,  rot: 0,  fade: true },
+    birds:     { t: [0.60, 0.80], x: 0,   y: 0,  rot: 0,  fade: true },
     copy:      { t: [0.56, 0.74], x: 0,   y: -40, rot: 0, fade: true, px: true },
     hint:      { t: [0.00, 0.06], x: 0,   y: 0,  rot: 0,  fade: true, keepX: true },
   };
@@ -391,6 +397,42 @@
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
     };
+  }
+
+  // ---------- Birds ----------
+  // Two distant birds cross the sky left to right, dipping behind the sculpture's head.
+  // Drawn in image pixels (2688 x 1520), between the base and the sculpture layer.
+  const birdEls = document.querySelectorAll('.bird');
+  const FLIGHT = 24, GAP = 7;                         // seconds across, seconds of empty sky
+  const flock = [
+    { lag: 0,   dy: 0,   size: 1,    flap: 2.6, phase: 0 },
+    { lag: 1.1, dy: 34,  size: .86,  flap: 2.9, phase: 1.7 },
+  ];
+  function birdPath(x, y, size, wing) {
+    const w = 20 * size, h = 12 * size;
+    const tip = -h * wing, mid = -h * (0.35 + wing * 0.55);
+    return `M${x - w},${y + tip * .3} Q${x - w * .45},${y + mid} ${x},${y + 1.5 * size}`
+         + ` Q${x + w * .45},${y + mid} ${x + w},${y + tip * .3}`;
+  }
+  function drawBirds(t) {
+    flock.forEach((b, i) => {
+      const cycle = (t - b.lag) % (FLIGHT + GAP);
+      const u = cycle / FLIGHT;                        // 0 = left edge, 1 = right edge
+      if (u < 0 || u > 1) { birdEls[i].setAttribute('d', ''); return; }
+      const x = -60 + u * (2688 + 120);
+      const k = (u - 0.53) / 0.62;
+      const y = 300 + 125 * (1 - k * k) + b.dy + Math.sin(t * 0.7 + b.phase) * 10;
+      const wing = Math.sin(t * b.flap * Math.PI * 2 + b.phase);
+      // flap, with the odd glide
+      const glide = Math.sin(t * 0.45 + b.phase) > 0.55 ? 0.15 : 1;
+      birdEls[i].setAttribute('d', birdPath(x, y, b.size, 0.2 + wing * 0.8 * glide));
+    });
+  }
+  if (!reduce) {
+    const loopBirds = now => { if (hero.getBoundingClientRect().bottom > 0) drawBirds(now / 1000 + 4); requestAnimationFrame(loopBirds); };
+    requestAnimationFrame(loopBirds);
+  } else {
+    document.querySelector('.birds').style.display = 'none';
   }
 
   apply(0);
