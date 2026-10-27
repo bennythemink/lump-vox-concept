@@ -89,7 +89,8 @@
   .cta:focus-visible, .nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
   .water { z-index: 0; }
-  .bird { fill: none; stroke: #24343b; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; opacity: .78; }
+  .bird { fill: #24343b; opacity: .82; }
+  .bird .far { fill: #3c4f57; }
 
   .hint {
     position: absolute; z-index: 10; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px));
@@ -136,8 +137,8 @@
         <img class="layer" data-l="waterfall" data-gl="waterfall" src="assets/waterfall.webp" alt="">
         <img class="layer" data-l="reflection" data-gl="reflection" src="assets/sculpture-reflection.webp" alt="">
         <svg class="layer birds" data-l="birds" viewBox="0 0 2688 1520" preserveAspectRatio="none" aria-hidden="true">
-          <path class="bird" d=""></path>
-          <path class="bird" d=""></path>
+          <g class="bird"><path class="far"/><path/><path/></g>
+          <g class="bird"><path class="far"/><path/><path/></g>
         </svg>
         <img class="layer" data-l="sculpture" src="assets/sculpture.webp" alt="">
         <img class="layer" data-l="boardwalk" src="assets/boardwalk.webp" alt="">
@@ -408,24 +409,39 @@
     { lag: 0,   dy: 0,   size: 1,    flap: 2.6, phase: 0 },
     { lag: 1.1, dy: 34,  size: .86,  flap: 2.9, phase: 1.7 },
   ];
-  function birdPath(x, y, size, wing) {
-    const w = 20 * size, h = 12 * size;
-    const tip = -h * wing, mid = -h * (0.35 + wing * 0.55);
-    return `M${x - w},${y + tip * .3} Q${x - w * .45},${y + mid} ${x},${y + 1.5 * size}`
-         + ` Q${x + w * .45},${y + mid} ${x + w},${y + tip * .3}`;
+  // Side-on silhouette flying right. wing: 1 = top of upstroke, -1 = bottom of downstroke.
+  // Returns path data for [far wing, body + tail, near wing], drawn in that order.
+  function birdParts(x, y, size, wing) {
+    const k = 1.25 * size;
+    const P = (dx, dy) => `${(x + dx * k).toFixed(1)},${(y + dy * k).toFixed(1)}`;
+    const body = `M${P(-8, 0.4)} Q${P(-1, -2.8)} ${P(6, -1.9)} Q${P(8.6, -2.8)} ${P(10.6, -1.7)}`
+      + ` L${P(13.2, -1.1)} L${P(10.3, -0.2)} Q${P(5, 2)} ${P(-1, 2)} Q${P(-6, 1.9)} ${P(-8, 1.1)} Z`
+      + ` M${P(-7, 1.4)} L${P(-14, 3)} Q${P(-12, 0.7)} ${P(-13.5, -1.6)} L${P(-7, 0.2)} Z`;
+    function w(len, back, lift, dx) {
+      const a = wing * 0.98;                          // flap angle
+      const sx = 2 + dx, sy = -0.8;                  // shoulder
+      const tx = sx - back - 7 * Math.cos(a), ty = sy - len * Math.sin(a) + lift;
+      // wrist: a bit forward of the line to the tip, bent more on the downstroke
+      const ex = sx + (tx - sx) * 0.45 + 1.6, ey = sy + (ty - sy) * 0.5 - 1.2 * Math.sign(Math.sin(a));
+      const chord = 7.5;
+      return `M${P(sx + 2.6, sy - 0.3)} Q${P(ex + 1.2, ey)} ${P(tx, ty)}`
+        + ` Q${P(ex - chord * 0.7, ey + (ty < sy ? 1.5 : -1.5))} ${P(sx - chord * 0.6, sy + 0.4)} Z`;
+    }
+    return [w(16, 5, -1.2, -1.5), body, w(24, 6, 0, 0)];
   }
   function drawBirds(t) {
     flock.forEach((b, i) => {
       const cycle = (t - b.lag) % (FLIGHT + GAP);
       const u = cycle / FLIGHT;                        // 0 = left edge, 1 = right edge
-      if (u < 0 || u > 1) { birdEls[i].setAttribute('d', ''); return; }
+      if (u < 0 || u > 1) { birdEls[i].style.display = 'none'; return; }
+      birdEls[i].style.display = '';
       const x = -60 + u * (2688 + 120);
       const k = (u - 0.53) / 0.62;
       const y = 300 + 125 * (1 - k * k) + b.dy + Math.sin(t * 0.7 + b.phase) * 10;
       const wing = Math.sin(t * b.flap * Math.PI * 2 + b.phase);
       // flap, with the odd glide
       const glide = Math.sin(t * 0.45 + b.phase) > 0.55 ? 0.15 : 1;
-      birdEls[i].setAttribute('d', birdPath(x, y, b.size, 0.2 + wing * 0.8 * glide));
+      birdParts(x, y, b.size, glide < 1 ? 0.12 : 0.15 + wing * 0.85).forEach((d, j) => birdEls[i].children[j].setAttribute('d', d));
     });
   }
   if (!reduce) {
