@@ -409,25 +409,60 @@
     { lag: 0,   dy: 0,   size: 1,    flap: 1.9, phase: 0 },
     { lag: 1.1, dy: 34,  size: .86,  flap: 2.15, phase: 0.43 },
   ];
-  // Side-on silhouette flying right. wing: 1 = top of upstroke, -1 = bottom of downstroke.
-  // Returns path data for [far wing, body + tail, near wing], drawn in that order.
-  function birdParts(x, y, size, wing) {
+  // Side-on silhouette flying right, with a two-jointed wing (shoulder and wrist).
+  // ph is the wingbeat phase 0-1: downstroke 0-0.45 (wing stretched, sweeping down
+  // and forward), upstroke 0.45-1 (wrist flexes, hand folds back, then flicks open).
+  // glide 0-1 blends towards a steady, slightly raised spread. Returns path data for
+  // [far wing, body + tail, near wing], drawn in that order.
+  function birdParts(x, y, size, ph, glide) {
     const k = 1.25 * size;
     const P = (dx, dy) => `${(x + dx * k).toFixed(1)},${(y + dy * k).toFixed(1)}`;
     const body = `M${P(-8, 0.4)} Q${P(-1, -2.8)} ${P(6, -1.9)} Q${P(8.6, -2.8)} ${P(10.6, -1.7)}`
       + ` L${P(13.2, -1.1)} L${P(10.3, -0.2)} Q${P(5, 2)} ${P(-1, 2)} Q${P(-6, 1.9)} ${P(-8, 1.1)} Z`
       + ` M${P(-7, 1.4)} L${P(-14, 3)} Q${P(-12, 0.7)} ${P(-13.5, -1.6)} L${P(-7, 0.2)} Z`;
-    function w(len, back, lift, dx) {
-      const a = wing * 0.98;                          // flap angle
-      const sx = 2 + dx, sy = -0.8;                  // shoulder
-      const tx = sx - back - 7 * Math.cos(a), ty = sy - len * Math.sin(a) + lift;
-      // wrist: a bit forward of the line to the tip, bent more on the downstroke
-      const ex = sx + (tx - sx) * 0.45 + 1.6, ey = sy + (ty - sy) * 0.5 - 1.2 * Math.sin(a);
-      const chord = 7.5;
-      return `M${P(sx + 2.6, sy - 0.3)} Q${P(ex + 1.2, ey)} ${P(tx, ty)}`
-        + ` Q${P(ex - chord * 0.7, ey + 1.5 * Math.sin(a))} ${P(sx - chord * 0.6, sy + 0.4)} Z`;
+    const TAU = Math.PI * 2, sm = v => v * v * (3 - 2 * v);
+    const mix = (a, b, t) => a + (b - a) * t;
+    // shoulder elevation: fast down, slower up (radians; + is up)
+    const elev = p => {
+      p = ((p % 1) + 1) % 1;
+      return p < 0.45 ? mix(1.05, -0.5, sm(p / 0.45)) : mix(-0.5, 1.05, sm((p - 0.45) / 0.55));
+    };
+    const e1 = mix(elev(ph), 0.18, glide);
+    const e2 = mix(elev(ph - 0.08), 0.12, glide);                 // hand lags the arm
+    // hand extension: full on the downstroke, folded mid-upstroke
+    const up = ph > 0.45 ? Math.sin(Math.PI * (ph - 0.45) / 0.55) : 0;
+    const ext = mix(1 - 0.55 * up, 1, glide);
+    // forward on the way down, back on the way up
+    const fwd = mix(Math.sin(TAU * (ph + 0.1)) * 1.8, 0, glide);
+    // smooth closed curve through points (Catmull-Rom as cubic Beziers)
+    function smooth(pts) {
+      const n = pts.length; let d = `M${P(pts[0][0], pts[0][1])}`;
+      for (let i = 0; i < n; i++) {
+        const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+        const t = 0.14;
+        d += ` C${P(p1[0] + (p2[0] - p0[0]) * t, p1[1] + (p2[1] - p0[1]) * t)}`
+           + ` ${P(p2[0] - (p3[0] - p1[0]) * t, p2[1] - (p3[1] - p1[1]) * t)} ${P(p2[0], p2[1])}`;
+      }
+      return d + ' Z';
     }
-    return [w(16, 5, -1.2, -1.5), body, w(24, 6, 0, 0)];
+    // Seen slightly from below: a wing's span points partly towards or away from us, so the
+    // near wing dips below the body and the far wing rises above it when level.
+    const TILT = 0.38;
+    function wing(side, scale, dx) {                    // side: +1 near, -1 far
+      const sx = 2 + dx, sy = -0.6;                      // shoulder
+      const L1 = 9.5 * scale, L2 = 14 * scale;
+      const proj = (e, sweep) => [-sweep, -Math.sin(e) + TILT * side * Math.cos(e)];
+      const a = proj(e1, 0.15 - fwd * 0.08);
+      const wx = sx + a[0] * L1, wy = sy + a[1] * L1;    // wrist
+      const h = proj(e2, 0.45 + 0.75 * (1 - ext));       // hand sweeps back as it folds
+      const tx = wx + h[0] * L2 * ext + fwd * 0.4, ty = wy + h[1] * L2 * ext;
+      const c1 = 7.5 * scale, c2 = 6 * scale;            // wing width at shoulder and wrist
+      return smooth([
+        [sx + 2.4, sy], [wx + 0.6, wy], [tx, ty],
+        [wx - c2, wy + (ty - wy) * 0.15], [sx - c1, sy + 0.5],
+      ]);
+    }
+    return [wing(-1, 0.85, -1), body, wing(1, 1, 0)];
   }
   function drawBirds(t) {
     flock.forEach((b, i) => {
@@ -438,16 +473,13 @@
       const x = -60 + u * (2688 + 120);
       const k = (u - 0.53) / 0.62;
       const y = 300 + 125 * (1 - k * k) + b.dy + Math.sin(t * 0.7 + b.phase) * 10;
-      // Wingbeat: quick downstroke, slower recovery; wings stay mostly above the body.
       const ph = ((t * b.flap + b.phase) % 1 + 1) % 1;
       const sm = v => v * v * (3 - 2 * v);
-      const beat = ph < 0.42 ? 1 - 1.45 * sm(ph / 0.42) : -0.45 + 1.45 * sm((ph - 0.42) / 0.58);
-      // ease in and out of the odd glide instead of snapping
+      // ease in and out of the odd glide
       const g = sm(Math.min(1, Math.max(0, (Math.sin(t * 0.4 + b.phase * 2) - 0.45) / 0.35)));
-      const wing = beat * (1 - g) + 0.08 * g;
       // body lifts a touch on each downstroke
-      const bob = -Math.sin(ph * Math.PI * 2) * 1.6 * (1 - g);
-      birdParts(x, y + bob, b.size, wing).forEach((d, j) => birdEls[i].children[j].setAttribute('d', d));
+      const bob = -Math.sin(ph * Math.PI * 2) * 1.5 * (1 - g);
+      birdParts(x, y + bob, b.size, ph, g).forEach((d, j) => birdEls[i].children[j].setAttribute('d', d));
     });
   }
   if (!reduce) {
