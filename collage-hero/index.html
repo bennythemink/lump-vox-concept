@@ -259,9 +259,23 @@
         float thin = 1. - uFallA;
         float w = smoothstep(.28 + thin*.5, .72 + thin*.25, lum) * mix(.8, 1.15, streak);
         // a little churn where it lands
-        float churn = smoothstep(.62, .69, uv.y) * noise(vec2(uv.x * 400., uv.y * 300. - uTime * 6.));
-        vec3 c = mix(vec3(.93, .96, .97), fl.rgb, .2) + churn * .08;
-        return vec4(c, clamp(a0 * (w + churn * .35) * uFallA, 0., 1.));
+        float churn = smoothstep(.6, .69, uv.y) * noise(vec2(uv.x * 400., uv.y * 300. - uTime * 7.));
+        vec3 c = mix(vec3(.93, .96, .97), fl.rgb, .2) + churn * .12;
+        return vec4(c, clamp(a0 * (w + churn * .6) * uFallA, 0., 1.));
+      }
+      // White water where the falls hit the pond: boiling foam that spills a little onto the surface.
+      vec4 foam(vec2 uv){
+        if (uFallA <= 0.001) return vec4(0.);
+        vec2 d = (uv - vec2(.219, .689)) / vec2(.078, .03);
+        float zone = 1. - smoothstep(.45, 1., length(d));
+        if (zone <= 0.) return vec4(0.);
+        float t = uTime;
+        float n1 = noise(vec2(uv.x * 260., uv.y * 520. - t * 9.));
+        float n2 = noise(vec2(uv.x * 610. + t * 1.7, uv.y * 900. - t * 15.));
+        float n3 = noise(vec2(uv.x * 140. - t * .6, uv.y * 260. + t * 2.));
+        float f = smoothstep(.3, .62, n1 * .55 + n2 * .3 + n3 * .35);
+        float a = f * zone * uFallA;
+        return vec4(vec3(.96, .98, .99) - (1. - n2) * .06, min(1., a * 1.15));
       }
       void main(){
         vec2 uv = vUv;
@@ -293,6 +307,8 @@
         // waterfall, and its flipped reflection in the pond
         vec4 wf = fall(uv);
         col = mix(col, wf.rgb, wf.a);
+        vec4 fo = foam(uv + off * 2.);
+        col = mix(col, fo.rgb, fo.a);
         if (uv.y > WATERLINE) {
           vec4 wr = fall(vec2(suv.x, 2. * WATERLINE - suv.y));
           col = mix(col, wr.rgb * .92, wr.a * .32 * m);
@@ -368,7 +384,7 @@
         clock = t;
         if (t > nextDrop) { addRipple(0.15 + Math.random() * 0.7, 0.75 + Math.random() * 0.2, 0.45); nextDrop = t + 2 + Math.random() * 3; }
         // soft rings where the waterfall lands, while it's running
-        if (fallA > 0.2 && t > nextSplash) { addRipple(0.165 + Math.random() * 0.1, 0.705, 0.28 * fallA); nextSplash = t + 0.9 + Math.random() * 0.8; }
+        if (fallA > 0.2 && t > nextSplash) { addRipple(0.175 + Math.random() * 0.09, 0.7, 0.4 * fallA); nextSplash = t + 0.45 + Math.random() * 0.45; }
         size();
         gl.uniform1f(u.time, t); gl.uniform1f(u.reflY, reflY); gl.uniform1f(u.reflA, reflA); gl.uniform1f(u.fallA, fallA);
         gl.uniform4fv(u.rip, rips);
