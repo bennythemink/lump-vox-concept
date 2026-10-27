@@ -1,0 +1,109 @@
+{
+  "canvas": {
+    "w": 2688,
+    "h": 1520
+  },
+  "layers": [
+    {
+      "name": "base",
+      "x": 0,
+      "y": 0,
+      "w": 2688,
+      "h": 1520,
+      "z": 0,
+      "file": "base.png",
+      "note": "Clean landscape. Frame 1 everywhere, with Frame 2 blended in behind every piece that leaves. Includes the dry rock mound and both plant clusters."
+    },
+    {
+      "name": "waterfall",
+      "x": 478,
+      "y": 688,
+      "w": 255,
+      "h": 365,
+      "z": 1,
+      "file": "waterfall.png",
+      "note": "Falling water only. Fade it out to leave the dry rocks in the base."
+    },
+    {
+      "name": "waterfall_reflection",
+      "x": 478,
+      "y": 1048,
+      "w": 245,
+      "h": 294,
+      "z": 2,
+      "file": "waterfall_reflection.png",
+      "note": "Reflection of the falling water. Fade with the waterfall."
+    },
+    {
+      "name": "sculpture_reflection",
+      "x": 1232,
+      "y": 1028,
+      "w": 415,
+      "h": 492,
+      "z": 3,
+      "file": "sculpture_reflection.png",
+      "note": "Reflection of the sculpture and stilts in the pond."
+    },
+    {
+      "name": "sculpture",
+      "x": 1197,
+      "y": 230,
+      "w": 488,
+      "h": 696,
+      "z": 4,
+      "file": "sculpture.png",
+      "note": "Sculpture and four stilts, with drop shadow."
+    },
+    {
+      "name": "boardwalk",
+      "x": 1826,
+      "y": 946,
+      "w": 816,
+      "h": 497,
+      "z": 5,
+      "file": "boardwalk.png",
+      "note": "Boardwalk deck, edge band and its dark reflection. The parts hidden under the reader and the right reeds are filled with plain timber colour so it stays whole if those leave first."
+    },
+    {
+      "name": "family",
+      "x": 1791,
+      "y": 715,
+      "w": 286,
+      "h": 291,
+      "z": 6,
+      "file": "family.png",
+      "note": "Family of three, with drop shadow."
+    },
+    {
+      "name": "reader",
+      "x": 2048,
+      "y": 888,
+      "w": 238,
+      "h": 308,
+      "z": 7,
+      "file": "reader.png",
+      "note": "Woman reading, with drop shadow."
+    },
+    {
+      "name": "reeds_left",
+      "x": 0,
+      "y": 906,
+      "w": 583,
+      "h": 614,
+      "z": 8,
+      "file": "reeds_left.png",
+      "note": "Foreground reeds, bottom left."
+    },
+    {
+      "name": "reeds_right",
+      "x": 1925,
+      "y": 978,
+      "w": 763,
+      "h": 542,
+      "z": 9,
+      "file": "reeds_right.png",
+      "note": "Foreground reeds, bottom right."
+    }
+  ],
+  "how_to_use": "Every layer is positioned at x,y on a 2688x1520 canvas. Stack them in z order (0 at the back). Stacking all layers reproduces Frame 1; the base alone is the after state."
+}
