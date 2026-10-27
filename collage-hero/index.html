@@ -34,7 +34,8 @@
     padding-left: max(24px, env(safe-area-inset-left, 0px));
     padding-right: max(24px, env(safe-area-inset-right, 0px));
   }
-  .nav__brand { font-family: var(--serif); font-size: 26px; font-weight: 560; letter-spacing: -0.01em; }
+  .nav__brand { display: block; line-height: 0; }
+  .nav__brand img { display: block; height: clamp(40px, 4.2vw, 52px); width: auto; }
   .nav__links { display: flex; gap: clamp(14px, 2.2vw, 32px); font-size: 14px; letter-spacing: 0.02em; }
   .nav__links a { opacity: 0.85; transition: opacity .2s; }
   .nav__links a:hover, .nav__links a:focus-visible { opacity: 1; }
@@ -117,7 +118,7 @@
 </style>
 
 <header class="nav">
-  <a class="nav__brand" href="#">Lump</a>
+  <a class="nav__brand" href="#"><img src="assets/lump-logo.svg" alt="Lump Sculpture Studio" width="133" height="64"></a>
   <nav class="nav__links" aria-label="Main">
     <a href="#">Commercial</a><a href="#">Residential</a><a href="#">Art Fabrication</a><a href="#">About</a><a href="#">Contact</a>
   </nav>
