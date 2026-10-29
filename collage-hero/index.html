@@ -37,8 +37,8 @@
   .nav__links a:hover, .nav__links a:focus-visible { opacity: 1; }
 
   /* ---------- Hero ---------- */
-  .hero { position: relative; height: 720vh; }
-  .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--sky); }
+  .hero { position: relative; }
+  .stage { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--sky); }
   .scene {
     position: absolute; left: 50%; top: 50%;
     width: max(100vw, calc(100svh * 2688 / 1520));
@@ -298,19 +298,63 @@
     }, reduce ? 0 : 450);
   }
 
-  let target = 0, current = 0;
-  function progress() {
-    const r = hero.getBoundingClientRect();
-    const total = hero.offsetHeight - innerHeight;
-    return clamp(-r.top / total, 0, 1);
+  // ---------- One scroll, one act ----------
+  // While the hero is at the top of the page, a scroll (wheel, trackpad, swipe or key) plays the
+  // whole change to the next act at a set pace, and scrolling up plays it back. Scrolling during a
+  // change, and the trackpad's leftover momentum after it, is soaked up so one flick moves one act.
+  // Past act 3 the page scrolls on as normal; back at the top, scrolling up returns through the acts.
+  const ACTS = [0, 0.53, 0.92];               // scroll positions in the plan where each act rests
+  const DUR = [2.3, 2.1];                       // seconds for act 1 -> 2 and act 2 -> 3
+  let act = 0, current = 0, anim = null, quietUntil = 0, topSince = performance.now();
+
+  function go(to) {
+    const dur = reduce ? 0 : DUR[Math.min(act, to)];
+    anim = { from: current, to: ACTS[to], start: performance.now(), dur: dur * 1000 };
+    act = to;
   }
-  let last = performance.now();
-  function tick(now) {
-    const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    target = progress();
-    // same smoothing at any frame rate
-    current += (target - current) * (reduce ? 1 : 1 - Math.pow(1 - 0.12, dt * 60));
-    if (Math.abs(target - current) < 0.0005) current = target;
+  // dir: 1 down, -1 up. Returns true if the hero used it (so the page shouldn't scroll).
+  function intent(dir) {
+    const now = performance.now();
+    if (scrollY > 2) return false;                         // page is below the hero: normal scrolling
+    if (anim || now < quietUntil) { quietUntil = Math.max(quietUntil, now + 300); return true; }
+    if (dir > 0 && act < ACTS.length - 1) { go(act + 1); return true; }
+    if (dir < 0 && act > 0) {
+      if (now - topSince < 350) { quietUntil = now + 300; return true; }   // just back at the top: let the momentum die first
+      go(act - 1); return true;
+    }
+    return false;
+  }
+  addEventListener('scroll', () => { if (scrollY > 2) topSince = Infinity; else if (topSince === Infinity) topSince = performance.now(); }, { passive: true });
+  addEventListener('wheel', e => {
+    if (Math.abs(e.deltaY) < 3 || e.ctrlKey) return;     // ignore tiny jitters and pinch zoom
+    if (intent(Math.sign(e.deltaY))) e.preventDefault();
+  }, { passive: false });
+  let touchY = null, touchUsed = false;
+  addEventListener('touchstart', e => { touchY = e.touches[0].clientY; touchUsed = false; }, { passive: true });
+  addEventListener('touchmove', e => {
+    if (touchY === null) return;
+    const dy = touchY - e.touches[0].clientY;
+    if (touchUsed) { e.preventDefault(); return; }
+    if (Math.abs(dy) > 24) {
+      if (intent(Math.sign(dy))) { touchUsed = true; e.preventDefault(); } else touchY = null;
+    } else if (scrollY <= 2 && (dy > 0 ? act < ACTS.length - 1 : act > 0)) e.preventDefault();
+  }, { passive: false });
+  addEventListener('touchend', () => { touchY = null; });
+  addEventListener('keydown', e => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const down = ['ArrowDown', 'PageDown', ' '].includes(e.key) && !e.shiftKey;
+    const up = ['ArrowUp', 'PageUp'].includes(e.key) || (e.key === ' ' && e.shiftKey);
+    if (!down && !up) return;
+    if (e.key === ' ' && e.target.closest('a, button, input, textarea')) return;
+    if (intent(down ? 1 : -1)) e.preventDefault();
+  });
+
+    function tick(now) {
+    if (anim) {
+      const t = anim.dur ? clamp((now - anim.start) / anim.dur, 0, 1) : 1;
+      current = anim.from + (anim.to - anim.from) * t;
+      if (t >= 1) { anim = null; quietUntil = now + 600; }
+    }
     apply(current);
     const onScreen = hero.getBoundingClientRect().bottom > 0;
     if (onScreen && pond) {
@@ -603,7 +647,7 @@
 
   apply(0);
   requestAnimationFrame(tick);
-  window.__hero = { setProgress(p) { const total = hero.offsetHeight - innerHeight; scrollTo(0, hero.offsetTop + p * total); } };
+  window.__hero = { setProgress(p) { anim = null; current = p; }, step(d) { return intent(d); }, get act() { return act; } };
 })();
 </script>
 
