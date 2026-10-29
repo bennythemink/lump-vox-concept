@@ -52,9 +52,10 @@
     position: absolute; inset: 0; width: 100%; height: 100%;
     max-width: none; display: block; pointer-events: none; user-select: none;
     transform-origin: 50% 100%;
-    will-change: transform, opacity;
   }
-  .base { will-change: auto; }
+  /* Pieces only get their own graphics layer while an act change is playing */
+  .scene.moving .layer:not(.base) { will-change: transform, opacity; }
+  [hidden] { display: none !important; }
 
   .copy {
     position: absolute; z-index: 10;
@@ -130,7 +131,7 @@
     <div class="stage">
       <!-- Layers, back to front. data-box is the piece's place in the 2688 x 1520 artwork. -->
       <div class="scene" aria-hidden="true">
-        <img class="layer base" src="assets/act3-base.webp" alt="">
+        <img class="layer base" data-src="assets/act3-base.webp" data-now alt="">
         <svg class="layer birds" viewBox="0 0 2688 1520" preserveAspectRatio="none">
           <g class="bird"><path class="far"/><path/><path/></g>
           <g class="bird"><path class="far"/><path/><path/></g>
@@ -140,26 +141,26 @@
         <img class="layer" data-l="lawn"  data-box="0,576,2688,944"   data-src="assets/c/lawn.webp" alt="">
         <img class="layer" data-l="trees" data-box="1072,224,1507,621" data-src="assets/c/trees.webp" alt="">
         <img class="layer" data-l="house" data-box="0,214,1109,769"   data-src="assets/c/house.webp" alt="">
-        <canvas class="layer" data-l="pool" data-water="pool" hidden></canvas>
-        <img class="layer" data-l="pool" data-fallback="pool" data-src="assets/home-pool.webp" alt="">
+        <canvas class="layer" data-l="pool" data-water="pool" data-box="0,1032,1896,488" hidden></canvas>
+        <img class="layer" data-l="pool" data-fallback="pool" data-box="0,1032,1896,488" data-src="assets/w/pool.webp" alt="">
         <img class="layer" data-l="reed"  data-box="1698,325,383,635" data-src="assets/c/reed.webp" alt="">
         <img class="layer" data-l="bed"   data-box="1415,805,973,284" data-src="assets/c/bed.webp" alt="">
         <img class="layer" data-l="deck"  data-box="0,888,2688,632"   data-src="assets/c/deck.webp" alt="">
         <img class="layer" data-l="kids"  data-box="2127,923,494,303" data-src="assets/c/kids.webp" alt="">
 
         <!-- Act 1: the park -->
-        <img class="layer" data-l="ptrees" data-box="4,193,2680,714"  src="assets/c/ptrees.webp" alt="">
-        <img class="layer" data-l="bank"  data-box="0,939,2688,208"   src="assets/c/bank.webp" alt="">
-        <img class="layer" data-l="rocks" data-box="1,552,1258,517"   src="assets/c/rocks.webp" alt="">
-        <canvas class="layer" data-l="pond" data-water="pond" hidden></canvas>
-        <img class="layer" data-l="pond" data-fallback="pond" data-src="assets/park-pond.webp" alt="">
-        <img class="layer" data-l="waterfall" data-fallback="pond" data-src="assets/waterfall.webp" alt="">
-        <img class="layer" data-l="sculpture" data-box="1174,229,494,728" src="assets/c/sculpture.webp" alt="">
-        <img class="layer" data-l="boardwalk" data-box="1828,953,860,567" src="assets/c/boardwalk.webp" alt="">
-        <img class="layer" data-l="family" data-box="1814,721,226,271" src="assets/c/family.webp" alt="">
-        <img class="layer" data-l="reader" data-box="2069,877,193,315" src="assets/c/reader.webp" alt="">
-        <img class="layer" data-l="reedsL" data-box="0,905,566,615"   src="assets/c/reedsL.webp" alt="">
-        <img class="layer" data-l="reedsR" data-box="1897,972,791,548" src="assets/c/reedsR.webp" alt="">
+        <img class="layer" data-l="ptrees" data-box="4,193,2680,714"  data-src="assets/c/ptrees.webp" data-now alt="">
+        <img class="layer" data-l="bank"  data-box="0,939,2688,208"   data-src="assets/c/bank.webp" data-now alt="">
+        <img class="layer" data-l="rocks" data-box="1,552,1258,517"   data-src="assets/c/rocks.webp" data-now alt="">
+        <canvas class="layer" data-l="pond" data-water="pond" data-box="0,696,2688,824" hidden></canvas>
+        <img class="layer" data-l="pond" data-fallback="pond" data-box="0,696,2688,824" data-src="assets/w/pond.webp" alt="">
+        <img class="layer" data-l="waterfall" data-fallback="pond" data-box="0,696,2688,824" data-src="assets/w/pond-fall.webp" alt="">
+        <img class="layer" data-l="sculpture" data-box="1174,229,494,728" data-src="assets/c/sculpture.webp" data-now alt="">
+        <img class="layer" data-l="boardwalk" data-box="1828,953,860,567" data-src="assets/c/boardwalk.webp" data-now alt="">
+        <img class="layer" data-l="family" data-box="1814,721,226,271" data-src="assets/c/family.webp" data-now alt="">
+        <img class="layer" data-l="reader" data-box="2069,877,193,315" data-src="assets/c/reader.webp" data-now alt="">
+        <img class="layer" data-l="reedsL" data-box="0,905,566,615"   data-src="assets/c/reedsL.webp" data-now alt="">
+        <img class="layer" data-l="reedsR" data-box="1897,972,791,548" data-src="assets/c/reedsR.webp" data-now alt="">
       </div>
       <div class="copy">
         <h1 id="hero-title">Turn a space into&nbsp;a&nbsp;place.</h1>
@@ -192,6 +193,11 @@
     const [x, y, w, h] = el.dataset.box.split(',').map(Number);
     Object.assign(el.style, { left: x / W * 100 + '%', top: y / H * 100 + '%', width: w / W * 100 + '%', height: h / H * 100 + '%' });
   });
+  // Phones and small tablets get the half-size artwork: it looks the same at that size and
+  // takes a quarter of the memory
+  const small = Math.max(screen.width, screen.height) <= 1024;
+  const asset = p => small ? p.replace('assets/', 'assets/m/') : p;
+  document.querySelectorAll('img[data-now]').forEach(el => { el.src = asset(el.dataset.src); });
   const els = {};
   document.querySelectorAll('[data-l]').forEach(el => { (els[el.dataset.l] ||= []).push(el); });
 
@@ -272,6 +278,7 @@
       } else if (type === 'fade') {
         op = 1 - easeIO(t);
       }
+      if ((type === 'out' && t === 0) || (type === 'in' && t === 1) || (type === 'slide' && t === 0)) tr = '';
       if (k === 'hint') tr = 'translateX(-50%)';
       for (const el of els[k]) {
         if (el.hidden) continue;
@@ -382,6 +389,7 @@
     // Hold the page still until act 3 has settled, so a scroll can only ever move the acts.
     // Safari doesn't always let a page cancel a scroll, so this doesn't rely on that.
     const hold = scrollY <= 2 && now >= exitingUntil;
+    scene.classList.toggle('moving', anim !== null);
     if (hold !== root.classList.contains('hold')) root.classList.toggle('hold', hold);
     apply(current);
     const onScreen = hero.getBoundingClientRect().bottom > 0;
@@ -402,6 +410,8 @@
     varying vec2 vUv;
     uniform sampler2D uBase, uRefl, uMask, uFall;
     uniform float uTime, uReflA, uAspect, uFallA;
+    uniform vec4 uRect;                       // the water's box in the scene: x, y, width, height
+    vec2 L(vec2 g){ return (g - uRect.xy) / uRect.zw; }   // scene position -> texture position
     uniform vec4 uRip[8];
     const float WATERLINE = 0.6915;           // where the waterfall meets the pond
     const vec2 PX = vec2(1./2688., 1./1520.);
@@ -411,13 +421,13 @@
     // Falling water: the outline stays put, the white streaks inside it flow down.
     vec4 fall(vec2 uv){
       if (uFallA <= 0.001) return vec4(0.);
-      float a0 = (texture2D(uFall, uv).a*2. + texture2D(uFall, uv+vec2(2.,0.)*PX).a + texture2D(uFall, uv-vec2(2.,0.)*PX).a
-                + texture2D(uFall, uv-vec2(0.,3.)*PX).a) / 5.;
+      float a0 = (texture2D(uFall, L(uv)).a*2. + texture2D(uFall, L(uv+vec2(2.,0.)*PX)).a + texture2D(uFall, L(uv-vec2(2.,0.)*PX)).a
+                + texture2D(uFall, L(uv-vec2(0.,3.)*PX)).a) / 5.;
       if (a0 < 0.01) return vec4(0.);
-      float speed = .55, L = 46. * PX.y;
+      float speed = .55, Ln = 46. * PX.y;
       float p1 = fract(uTime * speed), p2 = fract(uTime * speed + .5);
-      vec4 s1 = texture2D(uFall, uv - vec2(0., p1 * L));
-      vec4 s2 = texture2D(uFall, uv - vec2(0., p2 * L));
+      vec4 s1 = texture2D(uFall, L(uv - vec2(0., p1 * Ln)));
+      vec4 s2 = texture2D(uFall, L(uv - vec2(0., p2 * Ln)));
       float w1 = 1. - abs(2.*p1 - 1.);
       vec4 fl = s1 * w1 + s2 * (1. - w1);
       float lum = dot(fl.rgb, vec3(.299, .587, .114)) * fl.a;
@@ -442,8 +452,8 @@
       return vec4(vec3(.96, .98, .99) - (1. - n2) * .06, min(1., f * zone * uFallA * 1.15));
     }
     void main(){
-      vec2 uv = vUv;
-      float m = texture2D(uMask, uv).r;
+      vec2 uv = uRect.xy + vUv * uRect.zw;     // scene position of this pixel
+      float m = texture2D(uMask, vUv).r;
       // slow ambient movement, mostly sideways like wind on still water
       vec2 off = vec2(
         sin(uv.y*150. + uTime*1.4) * .0011 + sin(uv.y*55. - uTime*.8 + uv.x*9.) * .0008,
@@ -462,10 +472,10 @@
       }
       off *= m;
       vec2 suv = clamp(uv + off, 0., 1.);
-      vec4 b = texture2D(uBase, suv);
+      vec4 b = texture2D(uBase, L(suv));
       vec3 col = b.rgb;
-      float a = texture2D(uBase, uv).a;
-      vec4 rc = texture2D(uRefl, suv);
+      float a = texture2D(uBase, vUv).a;
+      vec4 rc = texture2D(uRefl, L(suv));
       col = mix(col, rc.rgb, rc.a * uReflA);
       vec4 wf = fall(uv);
       col = mix(col, wf.rgb, wf.a);
@@ -501,6 +511,9 @@
     const U = n => gl.getUniformLocation(prog, n);
     const u = { time: U('uTime'), reflA: U('uReflA'), aspect: U('uAspect'), rip: U('uRip'), fallA: U('uFallA') };
     gl.uniform1f(u.aspect, W / H);
+    const [bx, by, bw, bh] = canvas.dataset.box.split(',').map(Number);
+    const rect = [bx / W, by / H, bw / W, bh / H];
+    gl.uniform4f(U('uRect'), ...rect);
     gl.clearColor(0, 0, 0, 0);
 
     const srcs = [['uBase', cfg.base], ['uMask', cfg.mask], ['uRefl', cfg.refl], ['uFall', cfg.fall]];
@@ -521,13 +534,13 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         if (--waiting === 0) { ready = true; cfg.onReady(); }
       };
-      img.src = src;
+      img.src = asset(src);
     });
 
     function size() {
-      const dpr = Math.min(devicePixelRatio || 1, 2);
-      const w = Math.min(W, Math.round(canvas.clientWidth * dpr));
-      const h = Math.round(w * H / W);
+      const dpr = Math.min(devicePixelRatio || 1, 1.5);
+      const w = Math.min(small ? bw / 2 : bw, Math.round(canvas.clientWidth * dpr));
+      const h = Math.round(w * bh / bw);
       if (canvas.width !== w) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
     }
 
@@ -538,7 +551,7 @@
     document.querySelector('.stage').addEventListener('pointermove', e => {
       if (!live) return;
       const r = canvas.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      const x = rect[0] + (e.clientX - r.left) / r.width * rect[2], y = rect[1] + (e.clientY - r.top) / r.height * rect[3];
       if (x < rx0 || x > rx1 || y < ry0 || y > ry1) return;
       if (clock - lastAdd < 0.14) return;
       if (lastPt && Math.hypot(x - lastPt[0], y - lastPt[1]) < 0.012) return;
@@ -567,7 +580,7 @@
 
   // Use the GL water where we can; otherwise load the still pictures instead
   function loadFallback(name) {
-    document.querySelectorAll(`[data-fallback="${name}"]`).forEach(el => { el.src = el.dataset.src; });
+    document.querySelectorAll(`[data-fallback="${name}"]`).forEach(el => { el.src = asset(el.dataset.src); });
   }
   function water(name, cfg) {
     const canvas = document.querySelector(`[data-water="${name}"]`);
@@ -579,16 +592,16 @@
     return w;
   }
   const pond = water('pond', {
-    base: 'assets/park-pond.webp', mask: 'assets/pond-mask.png',
-    refl: 'assets/sculpture-reflection.webp', fall: 'assets/waterfall.webp',
+    base: 'assets/w/pond.webp', mask: 'assets/w/pond-mask.png',
+    refl: 'assets/w/pond-refl.webp', fall: 'assets/w/pond-fall.webp',
     area: [0, 0.66, 1, 1],
   });
   let pool = null;
 
   // Act 2 waits until the park is on screen, so the first view loads quickly
   function loadAct2() {
-    document.querySelectorAll('img[data-src]:not([data-fallback])').forEach(el => { el.src = el.dataset.src; });
-    pool = water('pool', { base: 'assets/home-pool.webp', mask: 'assets/pool-mask.png', area: [0, 0.69, 0.7, 1] });
+    document.querySelectorAll('img[data-src]:not([data-fallback]):not([data-now])').forEach(el => { el.src = asset(el.dataset.src); });
+    pool = water('pool', { base: 'assets/w/pool.webp', mask: 'assets/w/pool-mask.png', area: [0, 0.69, 0.7, 1] });
   }
   if (document.readyState === 'complete') setTimeout(loadAct2, 300);
   else addEventListener('load', () => setTimeout(loadAct2, 300));

@@ -15,3 +15,9 @@ uses what's in `collage-hero/assets`.
   `collage-hero/index.html` gives x, y, width, height).
   - `layers/act-2/kids-cutout.webp` is Benny's kids cut from the earlier home frame;
     `home-kids.webp` is that cut scaled and placed on the act 2 lawn.
+- `layers/act-1/park-pond.webp`, `waterfall.webp`, `sculpture-reflection.webp`, `pond-mask.png`
+  and `layers/act-2/home-pool.webp`, `pool-mask.png` are the full-size water sources. The page
+  uses copies cropped to the water's box in `collage-hero/assets/w/`.
+
+The page also has a half-size copy of everything in `collage-hero/assets/m/`, which phones
+and small tablets load instead. Re-make it whenever a piece changes.
