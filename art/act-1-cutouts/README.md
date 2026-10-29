@@ -1,27 +1,22 @@
-# Hero collage layers
+# Act 1 cutouts
 
-Cut from the final Frame 1 (before scroll) for the paper collage hero.
+Benny's original cuts of the act 1 park pieces, from Frame 1 (now `../masters/act-1-original.png`). Full-quality PNG masters; the page uses WebP copies.
 
 ## Files
 
-- `base.png`: the clean landscape left after the scroll (the after state).
 - One transparent PNG per moving piece, cropped tight. `manifest.json` gives each one's x, y position on the 2688 x 1520 canvas and its stacking order (z).
-- `check-all-layers-stacked.png`: every layer stacked back together. It should look the same as Frame 1.
-- `reference-frame-1-before.png` and `reference-frame-2-after.png`: the two source images.
-- `layer-overview.jpg`: every piece on its own, for a quick look.
 
 ## Stacking order (back to front)
 
-1. base
-2. waterfall
-3. waterfall_reflection
-4. sculpture_reflection
-5. sculpture
-6. boardwalk
-7. family
-8. reader
-9. reeds_left
-10. reeds_right
+1. waterfall
+2. waterfall_reflection
+3. sculpture_reflection
+4. sculpture
+5. boardwalk
+6. family
+7. reader
+8. reeds_left
+9. reeds_right
 
 ## Known limits
 

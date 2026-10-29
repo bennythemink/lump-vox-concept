@@ -5,16 +5,6 @@
   },
   "layers": [
     {
-      "name": "base",
-      "x": 0,
-      "y": 0,
-      "w": 2688,
-      "h": 1520,
-      "z": 0,
-      "file": "base.png",
-      "note": "Clean landscape. Frame 1 everywhere, with Frame 2 blended in behind every piece that leaves. Includes the dry rock mound and both plant clusters."
-    },
-    {
       "name": "waterfall",
       "x": 478,
       "y": 688,
@@ -105,5 +95,5 @@
       "note": "Foreground reeds, bottom right."
     }
   ],
-  "how_to_use": "Every layer is positioned at x,y on a 2688x1520 canvas. Stack them in z order (0 at the back). Stacking all layers reproduces Frame 1; the base alone is the after state."
+  "how_to_use": "Every layer is positioned at x,y on a 2688x1520 canvas. Stack them in z order (0 at the back) over ../masters/act-1-original.png's landscape to reproduce Frame 1."
 }
