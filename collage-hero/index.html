@@ -308,28 +308,50 @@
   const ACTS = [0, 0.53, 0.92];               // scroll positions in the plan where each act rests
   const DUR = [2.3, 2.1];                       // seconds for act 1 -> 2 and act 2 -> 3
   let act = 0, current = 0, anim = null, quietUntil = 0, topSince = performance.now();
+  const root = document.documentElement;
 
   function go(to) {
     const dur = reduce ? 0 : DUR[Math.min(act, to)];
     anim = { from: current, to: ACTS[to], start: performance.now(), dur: dur * 1000 };
     act = to;
   }
-  // dir: 1 down, -1 up. Returns true if the hero used it (so the page shouldn't scroll).
-  function intent(dir) {
+  // Leaving act 3: the hero glides the page down to the next section itself, so it works the
+  // same every time instead of depending on when the browser lets the page scroll again.
+  let exitingUntil = 0, below = false;
+  function exitHero() {
+    exitingUntil = performance.now() + 900;
+    root.classList.remove('hold');
+    document.querySelector('.next').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  }
+  // dir: 1 down, -1 up. fresh: the start of a new gesture rather than a trackpad's momentum tail.
+  // Returns true if the hero used it (so the page shouldn't scroll).
+  function intent(dir, fresh = true) {
     const now = performance.now();
-    if (scrollY > 2) return false;                         // page is below the hero: normal scrolling
-    if (anim || now < quietUntil) { quietUntil = Math.max(quietUntil, now + 300); return true; }
+    if (now < exitingUntil) return true;                  // gliding to the next section
+    if (scrollY > 2) { below = true; return false; }       // page is below the hero: normal scrolling
+    if (below) { below = false; quietUntil = now + 350; }  // just scrolled back to the top
+    if (anim) return true;                                 // an act change is playing
+    if (now < quietUntil && !fresh) { quietUntil = now + 150; return true; }   // momentum left over
     if (dir > 0 && act < ACTS.length - 1) { go(act + 1); return true; }
+    if (dir > 0) { exitHero(); return true; }
     if (dir < 0 && act > 0) {
-      if (now - topSince < 350) { quietUntil = now + 300; return true; }   // just back at the top: let the momentum die first
       go(act - 1); return true;
     }
     return false;
   }
-  addEventListener('scroll', () => { if (scrollY > 2) topSince = Infinity; else if (topSince === Infinity) topSince = performance.now(); }, { passive: true });
+  addEventListener('scroll', () => {
+    if (scrollY > 2) topSince = Infinity;
+    else if (topSince === Infinity) { topSince = performance.now(); quietUntil = topSince + 350; }   // back at the top
+  }, { passive: true });
+  // A trackpad keeps sending ever-smaller scrolls after the fingers lift. A new gesture shows up
+  // as a pause or a jump in size, which is how a deliberate scroll is told apart from the tail.
+  let lastWheel = 0, lastAbs = 0;
   document.addEventListener('wheel', e => {
-    if (Math.abs(e.deltaY) < 3 || e.ctrlKey) return;     // ignore tiny jitters and pinch zoom
-    if (intent(Math.sign(e.deltaY))) e.preventDefault();
+    const now = performance.now(), abs = Math.abs(e.deltaY);
+    const fresh = now - lastWheel > 140 || abs > lastAbs * 1.3 + 4;
+    lastWheel = now; lastAbs = abs;
+    if (abs < 3 || e.ctrlKey) { if (root.classList.contains('hold')) e.preventDefault(); return; }
+    if (intent(Math.sign(e.deltaY), fresh)) e.preventDefault();
   }, { passive: false });
   let touchY = null, touchUsed = false;
   addEventListener('touchstart', e => { touchY = e.touches[0].clientY; touchUsed = false; }, { passive: true });
@@ -351,16 +373,15 @@
     if (intent(down ? 1 : -1)) e.preventDefault();
   });
 
-    const root = document.documentElement;
-  function tick(now) {
+    function tick(now) {
     if (anim) {
       const t = anim.dur ? clamp((now - anim.start) / anim.dur, 0, 1) : 1;
       current = anim.from + (anim.to - anim.from) * t;
-      if (t >= 1) { anim = null; quietUntil = now + 600; }
+      if (t >= 1) { anim = null; quietUntil = now + 400; }
     }
     // Hold the page still until act 3 has settled, so a scroll can only ever move the acts.
     // Safari doesn't always let a page cancel a scroll, so this doesn't rely on that.
-    const hold = scrollY <= 2 && (act < ACTS.length - 1 || anim !== null || now < quietUntil);
+    const hold = scrollY <= 2 && now >= exitingUntil;
     if (hold !== root.classList.contains('hold')) root.classList.toggle('hold', hold);
     apply(current);
     const onScreen = hero.getBoundingClientRect().bottom > 0;
