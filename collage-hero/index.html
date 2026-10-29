@@ -91,6 +91,14 @@
   .bird { fill: #24343b; opacity: .82; }
   .bird .far { fill: #3c4f57; }
 
+  /* Act 3: a tumbleweed rolls across the empty block */
+  .tumble { position: absolute; left: 0; top: 0; width: 6%; aspect-ratio: 1; pointer-events: none; visibility: hidden; }
+  .tumble img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; display: block; }
+  .tumble__shadow {
+    position: absolute; left: 8%; right: 8%; bottom: -5%; height: 18%; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(52, 34, 16, .38), rgba(52, 34, 16, 0));
+  }
+
   .hint {
     position: absolute; z-index: 10; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
@@ -136,6 +144,7 @@
           <g class="bird"><path class="far"/><path/><path/></g>
           <g class="bird"><path class="far"/><path/><path/></g>
         </svg>
+        <div class="tumble"><div class="tumble__shadow"></div><img data-src="assets/c/tumbleweed.webp" data-now alt=""></div>
 
         <!-- Act 2: the home. Loaded once the park is showing. -->
         <img class="layer" data-l="lawn"  data-box="0,576,2688,944"   data-src="assets/c/lawn.webp" alt="">
@@ -393,6 +402,7 @@
     if (hold !== root.classList.contains('hold')) root.classList.toggle('hold', hold);
     apply(current);
     const onScreen = hero.getBoundingClientRect().bottom > 0;
+    if (onScreen) tumble(now);
     if (onScreen && pond) {
       const sc = pose('sculpture', current), wf = pose('waterfall', current);
       if (visibleWater.pond > 0.002) pond.render(now / 1000, 1 - easeIO(sc.t), 1 - easeIO(wf.t));
@@ -605,6 +615,33 @@
   }
   if (document.readyState === 'complete') setTimeout(loadAct2, 300);
   else addEventListener('load', () => setTimeout(loadAct2, 300));
+
+  // ---------- Tumbleweed ----------
+  // Only in act 3. Each time the empty block settles, a tumbleweed rolls in from the left,
+  // bouncing as it goes, and crosses to the right; then it comes round again after a pause.
+  const tw = document.querySelector('.tumble'), twImg = tw.querySelector('img'), twShadow = tw.querySelector('.tumble__shadow');
+  const PASS = 9, REST = 6;                            // seconds across, seconds of empty ground
+  let twStart = null;
+  function tumble(now) {
+    const shown = reduce ? 0 : smooth(ACTS[2] - 0.05, ACTS[2], current);
+    if (shown <= 0) { twStart = null; tw.style.visibility = 'hidden'; return; }
+    if (twStart === null) twStart = now;
+    const t = (now - twStart) / 1000 % (PASS + REST), u = t / PASS;
+    if (u > 1) { tw.style.visibility = 'hidden'; return; }
+    const sw = scene.clientWidth, sh = scene.clientHeight, size = tw.clientWidth;
+    const x = -size + u * (sw + 2 * size);
+    const groundY = sh * 0.80 - size;                   // resting on the near ground
+    // hops of varying height, landing softly
+    const hop = Math.abs(Math.sin(u * Math.PI * 7)) * (0.55 + 0.45 * Math.sin(u * 11 + 1)) * size * 0.32;
+    const roll = x / (size / 2) * 57.3;                 // rolls without slipping
+    tw.style.visibility = 'visible';
+    tw.style.opacity = shown;
+    tw.style.transform = `translate(${x}px, ${groundY}px)`;
+    twImg.style.transform = `translateY(${-hop}px) rotate(${roll}deg)`;
+    const lift = hop / (size * 0.32);
+    twShadow.style.transform = `scale(${1 - lift * 0.35})`;
+    twShadow.style.opacity = 1 - lift * 0.5;
+  }
 
   // ---------- Birds ----------
   // Two distant birds cross the sky left to right, through all three acts, behind everything.
