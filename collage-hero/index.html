@@ -1,17 +1,13 @@
 <!doctype html>
-<html lang="en-AU">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-</head>
-<body>
+<html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>
 <title>Lump Collage Hero</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&display=swap">
 <style>
-  /* Layout: a pinned full-screen stage; the collage covers it and comes apart as you scroll. Single look (the scene is daylight), so no dark theme. */
+  /* Layout: a pinned full-screen stage. The collage covers it and, as you scroll, the park folds
+     away as a home pops up, then the home folds away to the empty block. Single daylight look. */
   :root {
     color-scheme: light;
     --sky: #6aaed6;
@@ -41,7 +37,7 @@
   .nav__links a:hover, .nav__links a:focus-visible { opacity: 1; }
 
   /* ---------- Hero ---------- */
-  .hero { position: relative; height: 420vh; }
+  .hero { position: relative; height: 720vh; }
   .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--sky); }
   .scene {
     position: absolute; left: 50%; top: 50%;
@@ -53,8 +49,10 @@
   .layer {
     position: absolute; inset: 0; width: 100%; height: 100%;
     max-width: none; display: block; pointer-events: none; user-select: none;
+    transform-origin: 50% 100%;
     will-change: transform, opacity;
   }
+  .base { will-change: auto; }
 
   .copy {
     position: absolute; z-index: 10;
@@ -65,19 +63,18 @@
     background: var(--paper);
     box-shadow: 7px 9px 0 rgba(23, 48, 58, .16), 0 14px 34px rgba(23, 48, 58, .14);
     rotate: -1.2deg;
-    will-change: transform, opacity;
   }
   .copy h1 {
     margin: 0; font-family: var(--serif); font-weight: 420;
     font-size: clamp(40px, 5.6vw, 88px); line-height: 0.98; letter-spacing: -0.025em;
     font-variation-settings: 'opsz' 144; text-wrap: balance;
   }
-  .copy p {
+  .sub {
     margin: 18px 0 0; font-family: var(--serif); font-style: italic; font-weight: 360;
     font-size: clamp(19px, 1.8vw, 26px);
+    transition: opacity .45s ease, transform .45s ease;
   }
-  .rotate { display: inline-block; transition: opacity .45s ease, transform .45s ease; }
-  .rotate.is-out { opacity: 0; transform: translateY(.35em); }
+  .sub.is-out { opacity: 0; transform: translateY(.35em); }
   .cta {
     display: inline-flex; align-items: center; gap: 10px; margin-top: 28px;
     padding: 14px 22px 14px 24px; border-radius: 999px;
@@ -88,7 +85,6 @@
   .cta:hover { background: var(--corten); transform: translateY(-1px); }
   .cta:focus-visible, .nav a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
-  .water { z-index: 0; }
   .bird { fill: #24343b; opacity: .82; }
   .bird .far { fill: #3c4f57; }
 
@@ -97,7 +93,6 @@
     transform: translateX(-50%);
     font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
     color: var(--paper); background: rgba(23, 48, 58, .55); padding: 8px 14px; border-radius: 999px;
-    transition: opacity .4s;
   }
 
   .badge {
@@ -131,25 +126,41 @@
 <main>
   <section class="hero" aria-labelledby="hero-title">
     <div class="stage">
+      <!-- Layers, back to front. data-box is the piece's place in the 2688 x 1520 artwork. -->
       <div class="scene" aria-hidden="true">
-        <canvas class="layer water" hidden></canvas>
-        <img class="layer" data-gl="base" src="assets/base.webp" alt="">
-        <img class="layer" data-l="waterfall" data-gl="waterfall" src="assets/waterfall.webp" alt="">
-        <img class="layer" data-l="reflection" data-gl="reflection" src="assets/sculpture-reflection.webp" alt="">
-        <svg class="layer birds" data-l="birds" viewBox="0 0 2688 1520" preserveAspectRatio="none" aria-hidden="true">
+        <img class="layer base" src="assets/act3-base.webp" alt="">
+        <svg class="layer birds" viewBox="0 0 2688 1520" preserveAspectRatio="none">
           <g class="bird"><path class="far"/><path/><path/></g>
           <g class="bird"><path class="far"/><path/><path/></g>
         </svg>
-        <img class="layer" data-l="sculpture" src="assets/sculpture.webp" alt="">
-        <img class="layer" data-l="boardwalk" src="assets/boardwalk.webp" alt="">
-        <img class="layer" data-l="family" src="assets/family.webp" alt="">
-        <img class="layer" data-l="reader" src="assets/reader.webp" alt="">
-        <img class="layer" data-l="reedsL" src="assets/reeds-left.webp" alt="">
-        <img class="layer" data-l="reedsR" src="assets/reeds-right.webp" alt="">
+
+        <!-- Act 2: the home. Loaded once the park is showing. -->
+        <img class="layer" data-l="lawn"  data-box="0,576,2688,944"   data-src="assets/c/lawn.webp" alt="">
+        <img class="layer" data-l="trees" data-box="1072,224,1507,621" data-src="assets/c/trees.webp" alt="">
+        <img class="layer" data-l="house" data-box="0,214,1109,769"   data-src="assets/c/house.webp" alt="">
+        <canvas class="layer" data-l="pool" data-water="pool" hidden></canvas>
+        <img class="layer" data-l="pool" data-fallback="pool" data-src="assets/home-pool.webp" alt="">
+        <img class="layer" data-l="reed"  data-box="1698,325,383,635" data-src="assets/c/reed.webp" alt="">
+        <img class="layer" data-l="bed"   data-box="1415,805,973,284" data-src="assets/c/bed.webp" alt="">
+        <img class="layer" data-l="deck"  data-box="0,888,2688,632"   data-src="assets/c/deck.webp" alt="">
+        <img class="layer" data-l="kids"  data-box="2127,923,494,303" data-src="assets/c/kids.webp" alt="">
+
+        <!-- Act 1: the park -->
+        <img class="layer" data-l="bank"  data-box="0,939,2688,208"   src="assets/c/bank.webp" alt="">
+        <img class="layer" data-l="rocks" data-box="1,552,1258,517"   src="assets/c/rocks.webp" alt="">
+        <canvas class="layer" data-l="pond" data-water="pond" hidden></canvas>
+        <img class="layer" data-l="pond" data-fallback="pond" data-src="assets/park-pond.webp" alt="">
+        <img class="layer" data-l="waterfall" data-fallback="pond" data-src="assets/waterfall.webp" alt="">
+        <img class="layer" data-l="sculpture" data-box="1174,229,494,728" src="assets/c/sculpture.webp" alt="">
+        <img class="layer" data-l="boardwalk" data-box="1828,953,860,567" src="assets/c/boardwalk.webp" alt="">
+        <img class="layer" data-l="family" data-box="1814,721,226,271" src="assets/c/family.webp" alt="">
+        <img class="layer" data-l="reader" data-box="2069,877,193,315" src="assets/c/reader.webp" alt="">
+        <img class="layer" data-l="reedsL" data-box="0,905,566,615"   src="assets/c/reedsL.webp" alt="">
+        <img class="layer" data-l="reedsR" data-box="1897,972,791,548" src="assets/c/reedsR.webp" alt="">
       </div>
-      <div class="copy" data-l="copy">
+      <div class="copy">
         <h1 id="hero-title">Turn a space into&nbsp;a&nbsp;place.</h1>
-        <p>Somewhere to <span class="rotate" data-words="give directions by|meet at|come home to">give directions by</span></p>
+        <p class="sub">Somewhere to <span class="sub__word">meet at</span></p>
         <a class="cta" href="#">Creating a place? <span aria-hidden="true">&rarr;</span></a>
       </div>
       <div class="hint" data-l="hint">Scroll</div>
@@ -159,7 +170,7 @@
   <section class="next">
     <div class="next__inner">
       <h2>Without the sculpture, it&rsquo;s just a space.</h2>
-      <p>Placeholder for the next section. The hero above opens on the finished place, then takes it apart piece by piece until only the landscape is left.</p>
+      <p>Placeholder for the next section. The hero above opens on a park, builds a home out of it, then takes that apart too until only the empty block is left.</p>
     </div>
   </section>
 </main>
@@ -168,45 +179,128 @@
 
 <script>
 (() => {
+  const W = 2688, H = 1520;
   const hero = document.querySelector('.hero');
-  const els = {};
-  document.querySelectorAll('[data-l]').forEach(el => { els[el.dataset.l] = el; });
+  const scene = document.querySelector('.scene');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Each piece: when it starts and ends (0-1 of the hero scroll) and where it goes.
-  // x / y are % of the scene; rot in degrees.
-  const plan = {
-    reedsL:    { t: [0.02, 0.24], x: -55, y: 8,  rot: -6, fade: false },
-    reedsR:    { t: [0.02, 0.24], x: 55,  y: 8,  rot: 6,  fade: false },
-    reader:    { t: [0.18, 0.36], x: 4,   y: -22, rot: 4, fade: true },
-    family:    { t: [0.26, 0.44], x: -3,  y: -24, rot: -3, fade: true },
-    boardwalk: { t: [0.38, 0.60], x: 62,  y: 12, rot: 4,  fade: false },
-    sculpture: { t: [0.58, 0.88], x: 0,   y: -105, rot: -2, fade: false },
-    reflection:{ t: [0.58, 0.80], x: 0,   y: 18, rot: 0,  fade: true },
-    waterfall: { t: [0.46, 0.62], x: 0,   y: 0,  rot: 0,  fade: true },
-    birds:     { t: [0.60, 0.80], x: 0,   y: 0,  rot: 0,  fade: true },
-    copy:      { t: [0.56, 0.74], x: 0,   y: -40, rot: 0, fade: true, px: true },
-    hint:      { t: [0.00, 0.06], x: 0,   y: 0,  rot: 0,  fade: true, keepX: true },
-  };
-  const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;   // easeInOutCubic
+  // Place each cropped piece where it sits in the artwork
+  document.querySelectorAll('[data-box]').forEach(el => {
+    const [x, y, w, h] = el.dataset.box.split(',').map(Number);
+    Object.assign(el.style, { left: x / W * 100 + '%', top: y / H * 100 + '%', width: w / W * 100 + '%', height: h / H * 100 + '%' });
+  });
+  const els = {};
+  document.querySelectorAll('[data-l]').forEach(el => { (els[el.dataset.l] ||= []).push(el); });
+
+  // ---------- The plan ----------
+  // Scroll runs 0 to 1 over the hero. Act 1 (park) holds, then each park piece folds flat like a
+  // pop-up book page while its home piece stands up, act 2 holds, then the home folds away to the
+  // empty block (act 3).
+  //   out: folds back flat from its base      in: stands up from flat, with a little overshoot
+  //   slide: x / y in % of the scene          fade: just fades
+  const plan = [
+    // act 1 -> act 2, in pairs
+    { k: 'hint',      t: [0.00, 0.04], type: 'fade' },
+    { k: 'reedsL',    t: [0.06, 0.16], type: 'slide', x: -24, y: 6, rot: -6 },
+    { k: 'reedsR',    t: [0.06, 0.16], type: 'slide', x: 30,  y: 6, rot: 6 },
+    { k: 'reader',    t: [0.08, 0.15], type: 'out' },
+    { k: 'family',    t: [0.10, 0.17], type: 'out' },
+    { k: 'bank',      t: [0.12, 0.22], type: 'out' },
+    { k: 'lawn',      t: [0.14, 0.26], type: 'in' },
+    { k: 'waterfall', t: [0.14, 0.20], type: 'fade' },
+    { k: 'pond',      t: [0.17, 0.28], type: 'out' },
+    { k: 'pool',      t: [0.22, 0.33], type: 'in' },
+    { k: 'rocks',     t: [0.20, 0.30], type: 'out' },
+    { k: 'house',     t: [0.25, 0.36], type: 'in' },
+    { k: 'boardwalk', t: [0.22, 0.31], type: 'out' },
+    { k: 'deck',      t: [0.29, 0.39], type: 'in' },
+    { k: 'trees',     t: [0.28, 0.39], type: 'in' },
+    { k: 'sculpture', t: [0.27, 0.37], type: 'out' },
+    { k: 'bed',       t: [0.33, 0.42], type: 'in' },
+    { k: 'reed',      t: [0.35, 0.46], type: 'in' },
+    { k: 'kids',      t: [0.41, 0.48], type: 'in' },
+    // act 2 holds 0.48 - 0.58, then act 2 -> act 3
+    { k: 'kids',      t: [0.58, 0.63], type: 'out' },
+    { k: 'reed',      t: [0.60, 0.69], type: 'out' },
+    { k: 'bed',       t: [0.62, 0.70], type: 'out' },
+    { k: 'deck',      t: [0.63, 0.72], type: 'out' },
+    { k: 'trees',     t: [0.65, 0.74], type: 'out' },
+    { k: 'house',     t: [0.66, 0.76], type: 'out' },
+    { k: 'pool',      t: [0.68, 0.77], type: 'out' },
+    { k: 'lawn',      t: [0.72, 0.84], type: 'out' },
+    // act 3 holds from 0.84
+  ];
+  // The subtitle changes with the acts. Act 3's line is still to be written, so it bows out.
+  const subs = [[0, 'meet at'], [0.31, 'come home to'], [0.74, null]];
+
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeBack = t => { const c = 1.4; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const FOLD = 88;   // degrees from upright to flat
+
+  // Where each piece is at scroll p. A piece with an 'in' and an 'out' uses whichever applies.
+  function pose(k, p) {
+    const steps = plan.filter(s => s.k === k);
+    let st = null;
+    for (const s of steps) if (p >= s.t[0] || !st) st = s;      // last step that has started
+    const raw = clamp((p - st.t[0]) / (st.t[1] - st.t[0]), 0, 1);
+    if (st.type === 'in' && p < st.t[0]) return { type: 'in', t: 0 };
+    return { type: st.type, t: raw, s: st };
+  }
+  const visibleWater = { pond: 1, pool: 0 };
+  function apply(p) {
+    const sw = scene.clientWidth, sh = scene.clientHeight;
+    for (const k in els) {
+      const { type, t, s } = pose(k, p);
+      let tr = '', op = 1;
+      if (type === 'out') {
+        const e = easeIO(t);
+        tr = `perspective(1400px) rotateX(${e * FOLD}deg)`;
+        op = 1 - smooth(.72, 1, t);
+      } else if (type === 'in') {
+        const e = easeBack(t);
+        tr = `perspective(1400px) rotateX(${(1 - e) * FOLD}deg)`;
+        op = smooth(0, .22, t);
+      } else if (type === 'slide') {
+        const e = easeIO(t);
+        tr = `translate(${s.x * e / 100 * sw}px, ${s.y * e / 100 * sh}px) rotate(${s.rot * e}deg)`;
+      } else if (type === 'fade') {
+        op = 1 - easeIO(t);
+      }
+      if (k === 'hint') tr = 'translateX(-50%)';
+      for (const el of els[k]) {
+        if (el.hidden) continue;
+        el.style.transform = tr;
+        el.style.opacity = op;
+        el.style.visibility = op < 0.002 ? 'hidden' : '';
+      }
+      if (k in visibleWater) visibleWater[k] = op;
+    }
+    // subtitle
+    let sub = null;
+    for (const [at, words] of subs) if (p >= at) sub = words;
+    setSub(sub);
+  }
+
+  const subEl = document.querySelector('.sub'), wordEl = document.querySelector('.sub__word');
+  let shown = wordEl.textContent, pending, timer = 0;
+  function setSub(words) {
+    if (words === shown || words === pending) return;
+    pending = words;
+    clearTimeout(timer);
+    subEl.classList.add('is-out');
+    timer = setTimeout(() => {
+      shown = pending; pending = undefined;
+      if (shown) { wordEl.textContent = shown; subEl.classList.remove('is-out'); }
+    }, reduce ? 0 : 450);
+  }
 
   let target = 0, current = 0;
   function progress() {
     const r = hero.getBoundingClientRect();
     const total = hero.offsetHeight - innerHeight;
     return clamp(-r.top / total, 0, 1);
-  }
-  function apply(p) {
-    for (const k in plan) {
-      const el = els[k]; if (!el) continue;
-      const s = plan[k];
-      const t = ease(clamp((p - s.t[0]) / (s.t[1] - s.t[0]), 0, 1));
-      const unit = s.px ? 'px' : '%';
-      const base = s.keepX ? 'translateX(-50%) ' : '';
-      el.style.transform = `${base}translate(${s.x * t}${unit}, ${s.y * t}${unit}) rotate(${s.rot * t}deg)`;
-      if (s.fade) el.style.opacity = String(1 - t);
-    }
   }
   let last = performance.now();
   function tick(now) {
@@ -216,119 +310,113 @@
     current += (target - current) * (reduce ? 1 : 1 - Math.pow(1 - 0.12, dt * 60));
     if (Math.abs(target - current) < 0.0005) current = target;
     apply(current);
-    if (water) {
-      const s = plan.reflection;
-      const t = ease(clamp((current - s.t[0]) / (s.t[1] - s.t[0]), 0, 1));
-      const f = plan.waterfall;
-      const ft = ease(clamp((current - f.t[0]) / (f.t[1] - f.t[0]), 0, 1));
-      if (hero.getBoundingClientRect().bottom > 0) water.render(now / 1000, s.y / 100 * t, 1 - t, 1 - ft);
+    const onScreen = hero.getBoundingClientRect().bottom > 0;
+    if (onScreen && pond) {
+      const sc = pose('sculpture', current), wf = pose('waterfall', current);
+      if (visibleWater.pond > 0.002) pond.render(now / 1000, 1 - easeIO(sc.t), 1 - easeIO(wf.t));
     }
+    if (onScreen && pool && visibleWater.pool > 0.002) pool.render(now / 1000, 0, 0);
     requestAnimationFrame(tick);
   }
-  // ---------- Water ripple (WebGL) ----------
-  // The base image and the sculpture reflection are drawn in WebGL so the pond can move.
-  // Everything else stays as plain layers on top. Falls back to the still images if WebGL
-  // is unavailable or the viewer prefers reduced motion.
-  let water = null;
-  if (!reduce) water = makeWater();
 
-  function makeWater() {
-    const canvas = document.querySelector('.water');
-    const gl = canvas.getContext('webgl', { premultipliedAlpha: false, antialias: false });
+  // ---------- Water ripple (WebGL) ----------
+  // Draws one stretch of water (the pond, later the pool) with cursor ripples and the odd drop.
+  // The pond also carries the waterfall, its foam and the sculpture's reflection. Each canvas
+  // shows only its own water, so it folds and stands up with its piece like any other layer.
+  // Falls back to the still images without WebGL or with reduced motion.
+  const FS = `precision mediump float;
+    varying vec2 vUv;
+    uniform sampler2D uBase, uRefl, uMask, uFall;
+    uniform float uTime, uReflA, uAspect, uFallA;
+    uniform vec4 uRip[8];
+    const float WATERLINE = 0.6915;           // where the waterfall meets the pond
+    const vec2 PX = vec2(1./2688., 1./1520.);
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
+      return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
+    // Falling water: the outline stays put, the white streaks inside it flow down.
+    vec4 fall(vec2 uv){
+      if (uFallA <= 0.001) return vec4(0.);
+      float a0 = (texture2D(uFall, uv).a*2. + texture2D(uFall, uv+vec2(2.,0.)*PX).a + texture2D(uFall, uv-vec2(2.,0.)*PX).a
+                + texture2D(uFall, uv-vec2(0.,3.)*PX).a) / 5.;
+      if (a0 < 0.01) return vec4(0.);
+      float speed = .55, L = 46. * PX.y;
+      float p1 = fract(uTime * speed), p2 = fract(uTime * speed + .5);
+      vec4 s1 = texture2D(uFall, uv - vec2(0., p1 * L));
+      vec4 s2 = texture2D(uFall, uv - vec2(0., p2 * L));
+      float w1 = 1. - abs(2.*p1 - 1.);
+      vec4 fl = s1 * w1 + s2 * (1. - w1);
+      float lum = dot(fl.rgb, vec3(.299, .587, .114)) * fl.a;
+      float streak = noise(vec2(uv.x * 2688. / 5., (uv.y - uTime * .09) * 1520. / 70.));
+      float thin = 1. - uFallA;
+      float w = smoothstep(.28 + thin*.5, .72 + thin*.25, lum) * mix(.8, 1.15, streak);
+      float churn = smoothstep(.6, .69, uv.y) * noise(vec2(uv.x * 400., uv.y * 300. - uTime * 7.));
+      vec3 c = mix(vec3(.93, .96, .97), fl.rgb, .2) + churn * .12;
+      return vec4(c, clamp(a0 * (w + churn * .6) * uFallA, 0., 1.));
+    }
+    // White water where the falls hit the pond
+    vec4 foam(vec2 uv){
+      if (uFallA <= 0.001) return vec4(0.);
+      vec2 d = (uv - vec2(.219, .689)) / vec2(.078, .03);
+      float zone = 1. - smoothstep(.45, 1., length(d));
+      if (zone <= 0.) return vec4(0.);
+      float t = uTime;
+      float n1 = noise(vec2(uv.x * 260., uv.y * 520. - t * 9.));
+      float n2 = noise(vec2(uv.x * 610. + t * 1.7, uv.y * 900. - t * 15.));
+      float n3 = noise(vec2(uv.x * 140. - t * .6, uv.y * 260. + t * 2.));
+      float f = smoothstep(.3, .62, n1 * .55 + n2 * .3 + n3 * .35);
+      return vec4(vec3(.96, .98, .99) - (1. - n2) * .06, min(1., f * zone * uFallA * 1.15));
+    }
+    void main(){
+      vec2 uv = vUv;
+      float m = texture2D(uMask, uv).r;
+      // slow ambient movement, mostly sideways like wind on still water
+      vec2 off = vec2(
+        sin(uv.y*150. + uTime*1.4) * .0011 + sin(uv.y*55. - uTime*.8 + uv.x*9.) * .0008,
+        sin(uv.x*80. + uTime*1.1) * .0004);
+      float glint = 0.;
+      for (int i = 0; i < 8; i++) {
+        vec4 r = uRip[i];
+        float age = uTime - r.z;
+        if (r.w <= 0. || age < 0. || age > 4.) continue;
+        vec2 d = (uv - r.xy) * vec2(uAspect, 1.);
+        float dist = length(d);
+        float ring = dist - age * .16;
+        float w = sin(ring * 140.) * exp(-abs(ring) * 30.) * exp(-age * 1.1) * r.w;
+        off += normalize(d + 1e-5) * w * .006;
+        glint += w;
+      }
+      off *= m;
+      vec2 suv = clamp(uv + off, 0., 1.);
+      vec4 b = texture2D(uBase, suv);
+      vec3 col = b.rgb;
+      float a = texture2D(uBase, uv).a;
+      vec4 rc = texture2D(uRefl, suv);
+      col = mix(col, rc.rgb, rc.a * uReflA);
+      vec4 wf = fall(uv);
+      col = mix(col, wf.rgb, wf.a);
+      vec4 fo = foam(uv + off * 2.);
+      col = mix(col, fo.rgb, fo.a);
+      if (uv.y > WATERLINE) {
+        vec4 wr = fall(vec2(suv.x, 2. * WATERLINE - suv.y));
+        col = mix(col, wr.rgb * .92, wr.a * .32 * m);
+      }
+      col += glint * .05 * m;
+      a = max(a, max(wf.a, fo.a));
+      gl_FragColor = vec4(col, a);
+    }`;
+
+  function makeWater(canvas, cfg) {
+    const gl = canvas.getContext('webgl', { premultipliedAlpha: false, antialias: false, alpha: true });
     if (!gl) return null;
     const vs = `attribute vec2 p; varying vec2 vUv;
       void main(){ vUv = vec2(p.x*.5+.5, .5-p.y*.5); gl_Position = vec4(p,0.,1.); }`;
-    const fs = `precision mediump float;
-      varying vec2 vUv;
-      uniform sampler2D uBase, uRefl, uMask, uFall;
-      uniform float uTime, uReflY, uReflA, uAspect, uFallA;
-      uniform vec4 uRip[8];
-      const float WATERLINE = 0.6915;           // where the waterfall meets the pond
-      const vec2 PX = vec2(1./2688., 1./1520.);
-      float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-      float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
-        return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
-      // Falling water: the outline stays put, the white streaks inside it flow down.
-      vec4 fall(vec2 uv){
-        if (uFallA <= 0.001) return vec4(0.);
-        float a0 = (texture2D(uFall, uv).a*2. + texture2D(uFall, uv+vec2(2.,0.)*PX).a + texture2D(uFall, uv-vec2(2.,0.)*PX).a
-                  + texture2D(uFall, uv-vec2(0.,3.)*PX).a) / 5.;
-        if (a0 < 0.01) return vec4(0.);
-        float speed = .55, L = 46. * PX.y;
-        float p1 = fract(uTime * speed), p2 = fract(uTime * speed + .5);
-        vec4 s1 = texture2D(uFall, uv - vec2(0., p1 * L));
-        vec4 s2 = texture2D(uFall, uv - vec2(0., p2 * L));
-        float w1 = 1. - abs(2.*p1 - 1.);
-        vec4 fl = s1 * w1 + s2 * (1. - w1);
-        float lum = dot(fl.rgb, vec3(.299, .587, .114)) * fl.a;
-        // thin vertical streaks drifting down
-        float streak = noise(vec2(uv.x * 2688. / 5., (uv.y - uTime * .09) * 1520. / 70.));
-        float thin = 1. - uFallA;
-        float w = smoothstep(.28 + thin*.5, .72 + thin*.25, lum) * mix(.8, 1.15, streak);
-        // a little churn where it lands
-        float churn = smoothstep(.6, .69, uv.y) * noise(vec2(uv.x * 400., uv.y * 300. - uTime * 7.));
-        vec3 c = mix(vec3(.93, .96, .97), fl.rgb, .2) + churn * .12;
-        return vec4(c, clamp(a0 * (w + churn * .6) * uFallA, 0., 1.));
-      }
-      // White water where the falls hit the pond: boiling foam that spills a little onto the surface.
-      vec4 foam(vec2 uv){
-        if (uFallA <= 0.001) return vec4(0.);
-        vec2 d = (uv - vec2(.219, .689)) / vec2(.078, .03);
-        float zone = 1. - smoothstep(.45, 1., length(d));
-        if (zone <= 0.) return vec4(0.);
-        float t = uTime;
-        float n1 = noise(vec2(uv.x * 260., uv.y * 520. - t * 9.));
-        float n2 = noise(vec2(uv.x * 610. + t * 1.7, uv.y * 900. - t * 15.));
-        float n3 = noise(vec2(uv.x * 140. - t * .6, uv.y * 260. + t * 2.));
-        float f = smoothstep(.3, .62, n1 * .55 + n2 * .3 + n3 * .35);
-        float a = f * zone * uFallA;
-        return vec4(vec3(.96, .98, .99) - (1. - n2) * .06, min(1., a * 1.15));
-      }
-      void main(){
-        vec2 uv = vUv;
-        float m = texture2D(uMask, uv).r;
-        // slow ambient movement, mostly sideways like wind on still water
-        vec2 off = vec2(
-          sin(uv.y*150. + uTime*1.4) * .0011 + sin(uv.y*55. - uTime*.8 + uv.x*9.) * .0008,
-          sin(uv.x*80. + uTime*1.1) * .0004);
-        float glint = 0.;
-        for (int i = 0; i < 8; i++) {
-          vec4 r = uRip[i];
-          float age = uTime - r.z;
-          if (r.w <= 0. || age < 0. || age > 4.) continue;
-          vec2 d = (uv - r.xy) * vec2(uAspect, 1.);
-          float dist = length(d);
-          float ring = dist - age * .16;
-          float w = sin(ring * 140.) * exp(-abs(ring) * 30.) * exp(-age * 1.1) * r.w;
-          off += normalize(d + 1e-5) * w * .006;
-          glint += w;
-        }
-        off *= m;
-        vec2 suv = clamp(uv + off, 0., 1.);
-        vec3 col = texture2D(uBase, suv).rgb;
-        vec2 ruv = suv - vec2(0., uReflY);
-        if (ruv.y >= 0. && ruv.y <= 1.) {
-          vec4 rc = texture2D(uRefl, ruv);
-          col = mix(col, rc.rgb, rc.a * uReflA);
-        }
-        // waterfall, and its flipped reflection in the pond
-        vec4 wf = fall(uv);
-        col = mix(col, wf.rgb, wf.a);
-        vec4 fo = foam(uv + off * 2.);
-        col = mix(col, fo.rgb, fo.a);
-        if (uv.y > WATERLINE) {
-          vec4 wr = fall(vec2(suv.x, 2. * WATERLINE - suv.y));
-          col = mix(col, wr.rgb * .92, wr.a * .32 * m);
-        }
-        col += glint * .05 * m;
-        gl_FragColor = vec4(col, 1.);
-      }`;
     const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o);
       if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
     let prog;
     try {
       prog = gl.createProgram();
-      gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
       gl.linkProgram(prog);
       if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
     } catch (e) { console.warn('Water effect off:', e.message); return null; }
@@ -337,12 +425,19 @@
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const U = n => gl.getUniformLocation(prog, n);
-    const u = { time: U('uTime'), reflY: U('uReflY'), reflA: U('uReflA'), aspect: U('uAspect'), rip: U('uRip'), fallA: U('uFallA') };
-    gl.uniform1f(u.aspect, 2688 / 1520);
+    const u = { time: U('uTime'), reflA: U('uReflA'), aspect: U('uAspect'), rip: U('uRip'), fallA: U('uFallA') };
+    gl.uniform1f(u.aspect, W / H);
+    gl.clearColor(0, 0, 0, 0);
 
-    let loaded = 0, ready = false;
-    function tex(unit, name, src) {
-      const t = gl.createTexture(); const img = new Image();
+    const srcs = [['uBase', cfg.base], ['uMask', cfg.mask], ['uRefl', cfg.refl], ['uFall', cfg.fall]];
+    let waiting = srcs.filter(s => s[1]).length, ready = false;
+    srcs.forEach(([name, src], unit) => {
+      const t = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));  // empty until loaded
+      gl.uniform1i(U(name), unit);
+      if (!src) return;
+      const img = new Image();
       img.onload = () => {
         gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
@@ -350,59 +445,82 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.uniform1i(U(name), unit);
-        if (++loaded === 4) {
-          ready = true; canvas.hidden = false;
-          document.querySelectorAll('[data-gl]').forEach(el => el.style.visibility = 'hidden');
-        }
+        if (--waiting === 0) { ready = true; cfg.onReady(); }
       };
       img.src = src;
-    }
-    tex(0, 'uBase', 'assets/base.webp');
-    tex(1, 'uRefl', 'assets/sculpture-reflection.webp');
-    tex(2, 'uMask', 'assets/pond-mask.png');
-    tex(3, 'uFall', 'assets/waterfall.webp');
+    });
 
     function size() {
       const dpr = Math.min(devicePixelRatio || 1, 2);
-      const w = Math.min(2688, Math.round(canvas.clientWidth * dpr));
-      const h = Math.round(w * 1520 / 2688);
+      const w = Math.min(W, Math.round(canvas.clientWidth * dpr));
+      const h = Math.round(w * H / W);
       if (canvas.width !== w) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
     }
 
     // ripples: from the cursor over the water, plus the odd drop on its own
-    const rips = new Float32Array(32); let next = 0, lastAdd = 0, lastPt = null, clock = 0;
-    function addRipple(x, y, strength) {
-      rips.set([x, y, clock, strength], next * 4); next = (next + 1) % 8;
-    }
+    const rips = new Float32Array(32); let next = 0, lastAdd = 0, lastPt = null, clock = 0, live = false;
+    function addRipple(x, y, strength) { rips.set([x, y, clock, strength], next * 4); next = (next + 1) % 8; }
+    const [rx0, ry0, rx1, ry1] = cfg.area;
     document.querySelector('.stage').addEventListener('pointermove', e => {
+      if (!live) return;
       const r = canvas.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      if (x < 0 || x > 1 || y < 0.66 || y > 1) return;
+      if (x < rx0 || x > rx1 || y < ry0 || y > ry1) return;
       if (clock - lastAdd < 0.14) return;
       if (lastPt && Math.hypot(x - lastPt[0], y - lastPt[1]) < 0.012) return;
       lastAdd = clock; lastPt = [x, y]; addRipple(x, y, 0.8);
     });
-    let nextDrop = 1.5, nextSplash = 0.5;
+    let nextDrop = 1.5, nextSplash = 0.5, lastFrame = 0;
 
     return {
-      render(t, reflY, reflA, fallA) {
+      render(t, reflA, fallA) {
         if (!ready) return;
-        clock = t;
-        if (t > nextDrop) { addRipple(0.15 + Math.random() * 0.7, 0.75 + Math.random() * 0.2, 0.45); nextDrop = t + 2 + Math.random() * 3; }
-        // soft rings where the waterfall lands, while it's running
-        if (fallA > 0.2 && t > nextSplash) { addRipple(0.175 + Math.random() * 0.09, 0.7, 0.4 * fallA); nextSplash = t + 0.45 + Math.random() * 0.45; }
+        clock = t; live = true; lastFrame = t;
+        if (t > nextDrop) {
+          addRipple(rx0 + 0.05 + Math.random() * (rx1 - rx0 - 0.1), ry0 + 0.05 + Math.random() * (ry1 - ry0 - 0.08), 0.45);
+          nextDrop = t + 2 + Math.random() * 3;
+        }
+        if (cfg.fall && fallA > 0.2 && t > nextSplash) { addRipple(0.175 + Math.random() * 0.09, 0.7, 0.4 * fallA); nextSplash = t + 0.45 + Math.random() * 0.45; }
         size();
-        gl.uniform1f(u.time, t); gl.uniform1f(u.reflY, reflY); gl.uniform1f(u.reflA, reflA); gl.uniform1f(u.fallA, fallA);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.uniform1f(u.time, t); gl.uniform1f(u.reflA, reflA); gl.uniform1f(u.fallA, fallA);
         gl.uniform4fv(u.rip, rips);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        setTimeout(() => { if (clock === lastFrame && performance.now() / 1000 - t > 0.2) live = false; }, 300);
       }
     };
   }
 
+  // Use the GL water where we can; otherwise load the still pictures instead
+  function loadFallback(name) {
+    document.querySelectorAll(`[data-fallback="${name}"]`).forEach(el => { el.src = el.dataset.src; });
+  }
+  function water(name, cfg) {
+    const canvas = document.querySelector(`[data-water="${name}"]`);
+    const w = reduce ? null : makeWater(canvas, { ...cfg, onReady() {
+      canvas.hidden = false;
+      document.querySelectorAll(`[data-fallback="${name}"]`).forEach(el => { el.hidden = true; });
+    } });
+    if (!w) { canvas.remove(); loadFallback(name); }
+    return w;
+  }
+  const pond = water('pond', {
+    base: 'assets/park-pond.webp', mask: 'assets/pond-mask.png',
+    refl: 'assets/sculpture-reflection.webp', fall: 'assets/waterfall.webp',
+    area: [0, 0.66, 1, 1],
+  });
+  let pool = null;
+
+  // Act 2 waits until the park is on screen, so the first view loads quickly
+  function loadAct2() {
+    document.querySelectorAll('img[data-src]:not([data-fallback])').forEach(el => { el.src = el.dataset.src; });
+    pool = water('pool', { base: 'assets/home-pool.webp', mask: 'assets/pool-mask.png', area: [0, 0.69, 0.7, 1] });
+  }
+  if (document.readyState === 'complete') setTimeout(loadAct2, 300);
+  else addEventListener('load', () => setTimeout(loadAct2, 300));
+
   // ---------- Birds ----------
-  // Two distant birds cross the sky left to right, dipping behind the sculpture's head.
-  // Drawn in image pixels (2688 x 1520), between the base and the sculpture layer.
+  // Two distant birds cross the sky left to right, through all three acts, behind everything.
   const birdEls = document.querySelectorAll('.bird');
   const FLIGHT = 24, GAP = 7;                         // seconds across, seconds of empty sky
   const flock = [
@@ -422,20 +540,16 @@
       + ` M${P(-7, 1.4)} L${P(-14, 3)} Q${P(-12, 0.7)} ${P(-13.5, -1.6)} L${P(-7, 0.2)} Z`;
     const TAU = Math.PI * 2, sm = v => v * v * (3 - 2 * v);
     const mix = (a, b, t) => a + (b - a) * t;
-    // shoulder elevation: fast down, slower up (radians; + is up)
     const elev = p => {
       p = ((p % 1) + 1) % 1;
       return p < 0.45 ? mix(1.05, -0.5, sm(p / 0.45)) : mix(-0.5, 1.05, sm((p - 0.45) / 0.55));
     };
     const e1 = mix(elev(ph), 0.18, glide);
-    const e2 = mix(elev(ph - 0.08), 0.12, glide);                 // hand lags the arm
-    // hand extension: full on the downstroke, folded mid-upstroke
+    const e2 = mix(elev(ph - 0.08), 0.12, glide);
     const up = ph > 0.45 ? Math.sin(Math.PI * (ph - 0.45) / 0.55) : 0;
     const ext = mix(1 - 0.55 * up, 1, glide);
-    // forward on the way down, back on the way up
     const fwd = mix(Math.sin(TAU * (ph + 0.1)) * 1.8, 0, glide);
-    // smooth closed curve through points (Catmull-Rom as cubic Beziers)
-    function smooth(pts) {
+    function smoothPath(pts) {
       const n = pts.length; let d = `M${P(pts[0][0], pts[0][1])}`;
       for (let i = 0; i < n; i++) {
         const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
@@ -445,19 +559,17 @@
       }
       return d + ' Z';
     }
-    // Seen slightly from below: a wing's span points partly towards or away from us, so the
-    // near wing dips below the body and the far wing rises above it when level.
     const TILT = 0.38;
-    function wing(side, scale, dx) {                    // side: +1 near, -1 far
-      const sx = 2 + dx, sy = -0.6;                      // shoulder
+    function wing(side, scale, dx) {
+      const sx = 2 + dx, sy = -0.6;
       const L1 = 9.5 * scale, L2 = 14 * scale;
       const proj = (e, sweep) => [-sweep, -Math.sin(e) + TILT * side * Math.cos(e)];
       const a = proj(e1, 0.15 - fwd * 0.08);
-      const wx = sx + a[0] * L1, wy = sy + a[1] * L1;    // wrist
-      const h = proj(e2, 0.45 + 0.75 * (1 - ext));       // hand sweeps back as it folds
+      const wx = sx + a[0] * L1, wy = sy + a[1] * L1;
+      const h = proj(e2, 0.45 + 0.75 * (1 - ext));
       const tx = wx + h[0] * L2 * ext + fwd * 0.4, ty = wy + h[1] * L2 * ext;
-      const c1 = 7.5 * scale, c2 = 6 * scale;            // wing width at shoulder and wrist
-      return smooth([
+      const c1 = 7.5 * scale, c2 = 6 * scale;
+      return smoothPath([
         [sx + 2.4, sy], [wx + 0.6, wy], [tx, ty],
         [wx - c2, wy + (ty - wy) * 0.15], [sx - c1, sy + 0.5],
       ]);
@@ -467,17 +579,15 @@
   function drawBirds(t) {
     flock.forEach((b, i) => {
       const cycle = (t - b.lag) % (FLIGHT + GAP);
-      const u = cycle / FLIGHT;                        // 0 = left edge, 1 = right edge
+      const u = cycle / FLIGHT;
       if (u < 0 || u > 1) { birdEls[i].style.display = 'none'; return; }
       birdEls[i].style.display = '';
-      const x = -60 + u * (2688 + 120);
+      const x = -60 + u * (W + 120);
       const k = (u - 0.53) / 0.62;
       const y = 300 + 125 * (1 - k * k) + b.dy + Math.sin(t * 0.7 + b.phase) * 10;
       const ph = ((t * b.flap + b.phase) % 1 + 1) % 1;
       const sm = v => v * v * (3 - 2 * v);
-      // ease in and out of the odd glide
       const g = sm(Math.min(1, Math.max(0, (Math.sin(t * 0.4 + b.phase * 2) - 0.45) / 0.35)));
-      // body lifts a touch on each downstroke
       const bob = -Math.sin(ph * Math.PI * 2) * 1.5 * (1 - g);
       birdParts(x, y + bob, b.size, ph, g).forEach((d, j) => birdEls[i].children[j].setAttribute('d', d));
     });
@@ -491,17 +601,8 @@
 
   apply(0);
   requestAnimationFrame(tick);
-
-  // Rotating subtitle
-  const rot = document.querySelector('.rotate');
-  const words = rot.dataset.words.split('|');
-  let i = 0;
-  if (!reduce) setInterval(() => {
-    rot.classList.add('is-out');
-    setTimeout(() => { i = (i + 1) % words.length; rot.textContent = words[i]; rot.classList.remove('is-out'); }, 450);
-  }, 2800);
+  window.__hero = { setProgress(p) { const total = hero.offsetHeight - innerHeight; scrollTo(0, hero.offsetTop + p * total); } };
 })();
 </script>
 
-</body>
-</html>
+</body></html>
