@@ -66,7 +66,25 @@
     background: var(--paper);
     box-shadow: 7px 9px 0 rgba(23, 48, 58, .16), 0 14px 34px rgba(23, 48, 58, .14);
     rotate: -1.2deg;
+    transform-origin: 50% 100%;
   }
+  /* Act 3: no card, just the line on the empty sky */
+  .act3 {
+    position: absolute; z-index: 10; left: 0; right: 0;
+    top: calc(12.5% + env(safe-area-inset-top, 0px));
+    padding: 0 24px; text-align: center; color: var(--ink);
+    transform-origin: 50% 100%;
+  }
+  .act3 h2 {
+    margin: 0; font-family: var(--serif); font-weight: 400;
+    font-size: clamp(44px, 7.4vw, 128px); line-height: 0.95; letter-spacing: -0.025em;
+    font-variation-settings: 'opsz' 144; text-wrap: balance;
+  }
+  .act3 p {
+    margin: clamp(18px, 2.55vw, 44px) 0 0; font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: clamp(22px, 2.3vw, 40px);
+  }
+  .act3 .cta { margin-top: 20px; }
   .copy h1 {
     margin: 0; font-family: var(--serif); font-weight: 420;
     font-size: clamp(40px, 5.6vw, 88px); line-height: 0.98; letter-spacing: -0.025em;
@@ -171,10 +189,15 @@
         <img class="layer" data-l="reedsL" data-box="0,905,566,615"   data-src="assets/c/reedsL.webp" data-now alt="">
         <img class="layer" data-l="reedsR" data-box="1897,972,791,548" data-src="assets/c/reedsR.webp" data-now alt="">
       </div>
-      <div class="copy">
+      <div class="copy" data-l="copy">
         <h1 id="hero-title">Turn a space into&nbsp;a&nbsp;place.</h1>
         <p class="sub">Somewhere to <span class="sub__word">meet at</span></p>
         <a class="cta" href="#">Creating a place? <span aria-hidden="true">&rarr;</span></a>
+      </div>
+      <div class="act3" data-l="act3">
+        <h2>Every place starts as a&nbsp;space.</h2>
+        <p>Let’s start on yours.</p>
+        <a class="cta" href="#">Tell us about your space <span aria-hidden="true">&rarr;</span></a>
       </div>
       <div class="hint" data-l="hint">Scroll</div>
     </div>
@@ -247,10 +270,12 @@
     { k: 'house',     t: [0.66, 0.76], type: 'out' },
     { k: 'pool',      t: [0.68, 0.77], type: 'out' },
     { k: 'lawn',      t: [0.72, 0.84], type: 'out' },
-    // act 3 holds from 0.84
+    { k: 'copy',      t: [0.66, 0.76], type: 'out' },   // the paper card folds away with the home
+    { k: 'act3',      t: [0.78, 0.91], type: 'in' },    // and act 3's line stands up on the bare sky
+    // act 3 holds from 0.91
   ];
-  // The subtitle changes with the acts. Act 3's line is still to be written, so it bows out.
-  const subs = [[0, 'meet at'], [0.31, 'come home to'], [0.74, null]];
+  // The card's subtitle changes between acts 1 and 2. Act 3 has its own text, outside the card.
+  const subs = [[0, 'meet at'], [0.31, 'come home to']];
 
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
