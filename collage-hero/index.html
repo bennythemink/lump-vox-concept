@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>
-<title>Lump Collage Hero</title>
+<title>Lump Homepage Concept</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&display=swap">
 <style>
   /* Layout: a pinned full-screen stage. The collage covers it and, as you scroll, the park folds
      away as a home pops up, then the home folds away to the empty block. Single daylight look. */
@@ -18,25 +18,38 @@
     --sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--sans); overscroll-behavior: none; }
+  html, body { margin: 0; background: #fff; color: var(--ink); font-family: var(--sans); overscroll-behavior: none; }
   /* While the acts are playing the page itself can't scroll; it's freed once act 3 settles */
-  html.hold, html.hold body { overflow: hidden; height: 100%; }
+  html { scrollbar-gutter: stable; }
+  html.hold { overflow: hidden; }
   body { -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; }
 
-  /* ---------- Nav ---------- */
-  .nav {
-    position: fixed; z-index: 20; inset: 0 0 auto 0;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    padding-top: calc(22px + env(safe-area-inset-top, 0px));
-    padding-left: max(24px, env(safe-area-inset-left, 0px));
-    padding-right: max(24px, env(safe-area-inset-right, 0px));
+  /* ---------- Nav: logo on the sky, links on a floating torn-paper strip ---------- */
+  .nav { position: fixed; z-index: 20; inset: 0 0 auto 0; height: 0; }
+  .nav__brand { position: absolute; left: max(30px, env(safe-area-inset-left, 0px)); top: calc(26px + env(safe-area-inset-top, 0px)); line-height: 0; }
+  .nav__brand img { display: block; height: 52px; width: auto; }
+  .strip {
+    position: absolute; right: max(30px, env(safe-area-inset-right, 0px)); top: calc(20px + env(safe-area-inset-top, 0px));
+    display: flex; align-items: center; gap: 32px; padding: 13px 16px 13px 30px; min-height: 74px;
+    rotate: -0.6deg;
   }
-  .nav__brand { display: block; line-height: 0; }
-  .nav__brand img { display: block; height: clamp(40px, 4.2vw, 52px); width: auto; }
-  .nav__links { display: flex; gap: clamp(14px, 2.2vw, 32px); font-size: 14px; letter-spacing: 0.02em; }
-  .nav__links a { opacity: 0.85; transition: opacity .2s; }
-  .nav__links a:hover, .nav__links a:focus-visible { opacity: 1; }
+  .strip__paper { position: absolute; z-index: -2; left: -4.42%; top: -27%; width: 108.4%; height: 192%; pointer-events: none; }
+  .strip a { position: relative; }
+  .strip__link { font: 500 16px/1 var(--sans); color: var(--ink); padding: 6px 0; }
+  .strip__link::before {
+    content: ''; position: absolute; left: -4px; right: -4px; top: 9px; height: 16px; z-index: -1;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 18' preserveAspectRatio='none'%3E%3Cpath d='M2.1 6C29.8 2.3 69.4 3.7 96.1 5L98 13C59.4 15.6 29.7 13.3 4 14Z' fill='%23FFD647' fill-opacity='.9'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+    clip-path: inset(0 100% 0 0); transition: clip-path .35s ease-out;
+  }
+  .strip__link:hover::before, .strip__link:focus-visible::before { clip-path: inset(0 0 0 0); }
+  .strip__call {
+    font: 500 15px/1 var(--sans); color: var(--paper); background: var(--ink);
+    padding: 13px 18px; border-radius: 999px; white-space: nowrap; transition: background .25s;
+  }
+  .strip__call:hover { background: var(--corten); }
+  .strip a:focus-visible, .nav__brand:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  @media (max-width: 960px) { .strip__link { display: none; } .strip { padding-left: 16px; gap: 0; } }
 
   /* ---------- Hero ---------- */
   .hero { position: relative; }
@@ -131,24 +144,221 @@
     background: rgba(247, 241, 230, .9); padding: 7px 11px; border-radius: 999px;
   }
 
-  /* ---------- After the hero ---------- */
-  .next {
-    background: var(--paper); color: var(--ink);
-    padding-block: clamp(80px, 14vh, 160px);
-    padding-left: max(24px, env(safe-area-inset-left, 0px));
-    padding-right: max(24px, env(safe-area-inset-right, 0px));
+  /* ====================== Wireframe: everything below the hero ====================== */
+  /* Real copy, no styling: Inter, greys, crossed boxes for images. Only the hero is styled. */
+  .wf { --t: #262626; --m: #737373; --line: #d4d4d4; --ph: #efefef; font-family: 'Inter', system-ui, sans-serif; color: var(--t); background: #fff; }
+  .wf h2, .wf h3, .wf p, .wf blockquote, .wf figure { margin: 0; font-weight: 400; }
+  .wf a { color: inherit; }
+  .ph { position: relative; background: var(--ph); border: 1px solid var(--line); overflow: hidden; display: grid; place-items: center; }
+  .ph::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      linear-gradient(to top right, transparent calc(50% - .6px), var(--line) 50%, transparent calc(50% + .6px)),
+      linear-gradient(to bottom right, transparent calc(50% - .6px), var(--line) 50%, transparent calc(50% + .6px));
   }
-  .next__inner { max-width: 720px; margin: 0 auto; }
-  .next h2 { margin: 0; font-family: var(--serif); font-weight: 420; font-size: clamp(32px, 4vw, 56px); line-height: 1.05; letter-spacing: -.02em; text-wrap: balance; }
-  .next p { font-size: 18px; line-height: 1.6; max-width: 60ch; margin: 20px 0 0; }
+  .ph > span { position: relative; font: 500 15px/1.3 'Inter', sans-serif; color: var(--m); background: var(--ph); padding: 4px 8px; text-align: center; }
 
-  @media (max-width: 720px) { .nav__links { display: none; } }
+  /* Pink annotations, shown with the "Show notes" toggle */
+  .note { display: none; font: 500 13px/1.25 'Inter', sans-serif; color: #fff; background: #ff2d8f; padding: 8px 11px; border-radius: 4px; width: max-content; max-width: 460px; }
+  html.notes .note { display: block; }
+  .notes-toggle {
+    position: fixed; z-index: 30; right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(50px + env(safe-area-inset-bottom, 0px));
+    font: 500 12px/1 'Inter', sans-serif; color: #ff2d8f; background: #fff; border: 1.5px solid #ff2d8f;
+    padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  }
+  html.notes .notes-toggle { background: #ff2d8f; color: #fff; }
+
+  /* Grey band: marks where styling stops (presentation only) */
+  .band { background: #f2f2f2; min-height: 160px; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 40px 24px; text-align: center; }
+  .band p { font: 500 clamp(22px, 2.2vw, 32px)/1.2 'Inter', sans-serif; color: #262626; margin: 0; }
+
+  /* ---------- 02 One story: pinned, one chapter per scroll ---------- */
+  .story { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: #fff; transition: background-color .9s ease-in-out; }
+  .board { position: absolute; left: 0; top: 0; width: 1728px; height: 900px; transform-origin: 0 0; }
+  .b { position: absolute; left: calc(var(--x) * 1px); top: calc(var(--y) * 1px); width: calc(var(--w) * 1px); }
+  .b[style*="--h"] { height: calc(var(--h) * 1px); }
+  .chapter { position: absolute; inset: 0; pointer-events: none; }
+  .chapter.current { pointer-events: auto; }
+  /* Outgoing fades and drifts up quickly; incoming comes in from below once it has mostly gone,
+     its text 0.15s behind. 0.9s in all. */
+  .part { opacity: 0; transform: translateY(40px); transition: opacity .4s ease-in, transform .4s ease-in; }
+  .chapter.past .part { transform: translateY(-40px); }
+  .chapter.current .part { opacity: 1; transform: none; transition: opacity .55s ease-out .3s, transform .55s ease-out .3s; }
+  .chapter.current .part.txt { transition-delay: .45s; }
+  .t44 { font-size: 44px; line-height: 1.1; letter-spacing: -.01em; }
+  .t56 { font-size: 56px; line-height: 1.08; letter-spacing: -.015em; }
+  .t36 { font-size: 36px; line-height: 1.2; letter-spacing: -.01em; }
+  .t64 { font-size: 64px; line-height: 1.1; letter-spacing: -.02em; }
+  .t88 { font-size: 88px; line-height: 1.1; letter-spacing: -.02em; }
+  .muted { color: var(--m); }
+  .story .note { position: absolute; }
+  .chapter:not(.current) .note { display: none !important; }
+  /* ch1: slow push-in on the before image */
+  .push > .push__in { position: absolute; inset: 0; display: grid; place-items: center; transform: scale(1); }
+  .push > .push__in { transition: transform .9s ease-in-out; }
+  .draw i { transition: transform 0s .9s; }
+  .rise, .words span { transition: opacity .4s ease-in, transform 0s .9s; }
+  .chapter.current .push > .push__in { transform: scale(1.05); transition: transform 6s linear; }
+  /* ch3: the elevations draw on, view by view */
+  .draw { overflow: hidden; }
+  .draw img { width: 100%; height: 100%; display: block; object-fit: contain; }
+  .draw i { position: absolute; top: 0; bottom: 0; width: 25.2%; background: #fff; transform-origin: 100% 50%; }
+  .chapter.current .draw i { transform: scaleX(0); transition: transform 1.2s ease-out; }
+  /* ch4: the making builds up */
+  .rise { opacity: 0; transform: translateY(40px); }
+  .chapter.current .rise { opacity: 1; transform: none; transition: opacity .6s ease-out var(--d, .3s), transform .6s ease-out var(--d, .3s); }
+  /* ch6: the landmark line lands word by word */
+  .words span { display: inline-block; opacity: 0; transform: translateY(24px); }
+  .chapter.current .words span { opacity: 1; transform: none; transition: opacity .5s ease-out var(--d), transform .5s ease-out var(--d); }
+  /* chapter dots */
+  .dots { position: absolute; left: 1568px; top: 866px; display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; z-index: 2; }
+  .dots button { width: 10px; height: 10px; padding: 0; border-radius: 50%; border: 1.5px solid #262626; background: transparent; cursor: pointer; transition: background .3s ease-out; }
+  .dots button[aria-current="true"] { background: #262626; }
+
+  /* ---------- 03 Your place: two doors, both visible ---------- */
+  .sec { position: relative; padding: 110px 30px 120px; max-width: 1728px; margin: 0 auto; }
+  .sec > .note--label { position: absolute; left: 30px; top: 40px; }
+  .doors__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .door { display: grid; align-content: start; }
+  .door h2 { font-size: 48px; line-height: 1.1; letter-spacing: -.015em; }
+  .door__sub { font-style: italic; font-size: 20px; color: var(--m); margin-top: 8px !important; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 50px; }
+  .card { display: block; text-decoration: none; transition: transform .25s ease-out, box-shadow .25s ease-out; }
+  .card .ph { aspect-ratio: 261 / 320; }
+  .card .ph::before, .card .ph > span { transition: transform .25s ease-out; }
+  .card:hover, .card:focus-visible { transform: translate(-3px, -4px); box-shadow: 7px 9px 0 rgba(23, 48, 58, .16); }
+  .card:hover .ph::before, .card:hover .ph > span, .card:focus-visible .ph::before, .card:focus-visible .ph > span { transform: scale(1.03); }
+  .card h3 { font-size: 18px; font-weight: 500; margin-top: 16px; }
+  .card p { font-size: 15px; color: var(--m); margin-top: 6px; line-height: 1.4; }
+  .door hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0 36px; width: 100%; }
+  .door .note { margin-top: 24px; }
+  .fear { font-size: 28px; font-weight: 500; line-height: 1.25; }
+  .door__body { font-size: 18px; line-height: 1.45; margin-top: 12px !important; max-width: 683px; }
+  .door blockquote { font-style: italic; font-size: 26px; line-height: 1.35; margin-top: 70px; max-width: 683px; }
+  .door cite { display: block; font-style: normal; font-size: 14px; color: var(--m); margin-top: 18px; }
+  .door__link { font-size: 16px; font-weight: 500; margin-top: 60px; width: max-content; }
+  .slide { opacity: 0; transform: translateY(60px); }
+  .slide.in { opacity: 1; transform: none; transition: opacity .6s ease-out, transform .6s ease-out; }
+
+  /* ---------- 04 What we do: dense, quick index ---------- */
+  .services { background: #fbfbfb; }
+  .services .sec { padding-bottom: 100px; }
+  .svc__head { display: flex; align-items: flex-start; gap: 20px; justify-content: space-between; }
+  .svc__head h2 { font-size: 48px; letter-spacing: -.015em; }
+  .svc { list-style: none; padding: 0; margin: 56px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 20px; row-gap: 48px; }
+  .svc a { display: block; border-top: 1px solid var(--line); padding-top: 20px; text-decoration: none; }
+  .svc strong { display: block; font-size: 24px; font-weight: 500; }
+  .arrow { display: inline-block; transition: transform .25s ease-out; }
+  a:hover .arrow, a:focus-visible .arrow { transform: translateX(4px); }
+  .svc span.muted { display: block; font-size: 15px; margin-top: 8px; }
+  .fab { display: grid; grid-template-columns: 1.78fr 1fr; gap: 20px; border-top: 1px solid var(--line); margin-top: 88px; padding-top: 40px; }
+  .fab h3 { font-size: 36px; letter-spacing: -.01em; }
+  .fab__link { display: inline-block; font-size: 18px; font-weight: 500; margin-top: 8px; }
+  .fab blockquote { font-style: italic; font-size: 18px; margin-top: 4px; }
+  .fab .note { margin-top: 16px; }
+  .who { border-top: 1px solid var(--line); margin-top: 60px; padding-top: 36px; display: grid; grid-template-columns: 1fr auto; row-gap: 14px; align-items: end; }
+  .kicker { grid-column: 1 / -1; font-size: 13px; font-weight: 600; letter-spacing: .08em; color: var(--m); }
+  .names { font-size: 22px; font-weight: 500; grid-column: 1 / -1; }
+  .who .note { grid-column: 1; }
+  .portfolio { font-size: 20px; font-weight: 500; grid-column: 2; justify-self: end; }
+  .fadeup { opacity: 0; transform: translateY(24px); }
+  .fadeup.in { opacity: 1; transform: none; transition: opacity .4s ease-out, transform .4s ease-out; }
+
+  /* ---------- 05 Close: form on the homepage ---------- */
+  .close__grid { display: grid; grid-template-columns: 824px 1fr; gap: 20px; padding-top: 30px; }
+  .close__grid > * { min-width: 0; }
+  .close h2 { font-size: 80px; letter-spacing: -.02em; line-height: 1.1; }
+  .close__lead { font-size: 20px; line-height: 1.4; margin-top: 110px !important; max-width: 683px; }
+  .rating { display: inline-block; font-size: 18px; font-weight: 500; margin-top: 74px; }
+  .close__left .note { margin-top: 12px; }
+  .phone { display: inline-block; font-size: 22px; font-weight: 500; margin-top: 40px; }
+  .form { display: grid; gap: 24px; max-width: 683px; justify-self: end; width: 100%; }
+  .form label, .form legend { font-size: 14px; font-weight: 500; display: block; margin-bottom: 8px; padding: 0; }
+  .form fieldset { border: 0; padding: 0; margin: 0; position: relative; }
+  .drop { height: 140px; border: 1px dashed #bdbdbd; display: grid; place-items: center; color: var(--m); font-size: 15px; cursor: pointer; position: relative; overflow: hidden; }
+  .drop.over { background: #f5f5f5; border-color: #262626; }
+  .drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .opts label { margin: 0; font-weight: 400; font-size: 15px; border: 1px solid var(--line); height: 52px; display: flex; align-items: center; padding: 0 16px; cursor: pointer; }
+  .opts input { position: absolute; opacity: 0; pointer-events: none; }
+  .opts input:checked + span { font-weight: 600; }
+  .opts label:has(input:checked) { border-color: #262626; box-shadow: inset 0 0 0 1px #262626; }
+  .opts label:has(input:focus-visible) { outline: 2px solid #262626; outline-offset: 2px; }
+  .form fieldset .note { position: absolute; right: 0; top: -6px; }
+  .form input[type="text"], .form input[type="email"] { width: 100%; height: 52px; border: 1px solid var(--line); padding: 0 16px; font: 400 15px 'Inter', sans-serif; color: var(--t); }
+  .form button { justify-self: start; height: 56px; padding: 0 22px; border: 0; background: #262626; color: #fff; font: 500 16px 'Inter', sans-serif; cursor: pointer; margin-top: 6px; }
+  .thanks { display: grid; align-content: center; gap: 12px; min-height: 420px; }
+  .thanks h3 { font-size: 36px; letter-spacing: -.01em; }
+  .thanks p { font-size: 18px; color: var(--m); }
+  .fade-in { animation: fadeIn .5s ease-out both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  .footer { background: #ebebeb; }
+  .footer .sec { padding: 60px 30px; display: grid; gap: 14px; }
+  .footer h2 { font-size: 24px; font-weight: 500; }
+
+  /* ---------- Phones ---------- */
+  @media (max-width: 767px) {
+    .board { width: 100%; height: 100%; transform: none !important; left: 0 !important; top: 0 !important; }
+    .chapter { display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 110px 20px 40px; }
+    .chapter .b { position: static; left: auto; top: auto; width: auto; height: auto; }
+    .chapter .b.ph, .chapter .b.draw { position: relative; order: -1; width: 100%; height: auto; aspect-ratio: 16 / 10; flex: none; }
+    .ch4 .b.ph { aspect-ratio: 16 / 7; }
+    .ch4 .b.ph.small3 { display: none; }
+    .t44, .t36 { font-size: 26px; } .t56, .t64 { font-size: 32px; } .t88 { font-size: 40px; }
+    .chapter.ch7 { justify-content: center; text-align: center; }
+    .dots { left: auto; right: 20px; top: 92px; }
+    .story .note { display: none !important; }
+    .sec { padding: 80px 20px; }
+    .doors__grid { grid-template-columns: 1fr; gap: 80px; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .door h2, .svc__head h2 { font-size: 36px; }
+    .svc { grid-template-columns: 1fr; row-gap: 24px; }
+    .fab, .who, .close__grid { grid-template-columns: 1fr; }
+    .portfolio { grid-column: 1; justify-self: start; }
+    .close h2 { font-size: 48px; }
+    .close__lead { margin-top: 20px !important; }
+    .rating { margin-top: 30px; }
+    .form { justify-self: stretch; margin-top: 40px; }
+  }
+
+  /* ---------- Reduced motion: no pinning; hero acts and chapters stack ---------- */
+  .hero-static { display: none; }
+  html.rm .hero { display: none; }
+  html.rm .hero-static { display: block; }
+  .act-static { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--sky) center / cover no-repeat; }
+  .act-static .copy { rotate: -1.2deg; }
+  .act-static .act3 { visibility: visible; }
+  html.rm .story { height: auto; overflow: visible; }
+  html.rm .board { position: static; width: auto; height: auto; transform: none !important; }
+  html.rm .chwrap { position: relative; overflow: hidden; }
+  html.rm .chapter { pointer-events: auto; transform-origin: 0 0; width: 1728px; height: 900px; }
+  @media (max-width: 767px) {
+    html.rm .chwrap { height: auto !important; }
+    html.rm .chapter { position: relative; width: auto; height: auto; min-height: 100svh; transform: none !important; left: 0 !important; }
+  }
+  html.rm .part, html.rm .rise, html.rm .words span, html.rm .slide, html.rm .fadeup { opacity: 1 !important; transform: none !important; transition: none !important; }
+  html.rm .draw i { display: none; }
+  html.rm .dots { display: none; }
 </style>
 
 <header class="nav">
-  <a class="nav__brand" href="#"><img src="assets/lump-logo.svg" alt="Lump Sculpture Studio" width="133" height="64"></a>
-  <nav class="nav__links" aria-label="Main">
-    <a href="#">Commercial</a><a href="#">Residential</a><a href="#">Art Fabrication</a><a href="#">About</a><a href="#">Contact</a>
+  <a class="nav__brand" href="#"><img src="assets/lump-logo.svg" alt="Lump Sculpture Studio" width="110" height="52"></a>
+  <nav class="strip" aria-label="Main">
+    <svg class="strip__paper" viewBox="0 0 835 142" preserveAspectRatio="none" aria-hidden="true">
+      <defs><filter id="strip-shadow" x="0" y="0" width="838" height="141" filterUnits="userSpaceOnUse">
+        <feDropShadow dx="7" dy="9" stdDeviation="0" flood-color="#17303a" flood-opacity=".16"/>
+        <feDropShadow dx="0" dy="14" stdDeviation="17" flood-color="#17303a" flood-opacity=".14"/>
+      </filter></defs>
+      <path filter="url(#strip-shadow)" fill="#F7F1E6" d="M34.1 21L42.1 21.7L50.1 20.3L58.2 21.1L66.2 20.3L74.2 20L82.2 22.6L90.2 22L98.3 23.1L106.3 23.5L114.3 21.3L122.3 20.9L130.4 22L138.4 23.1L146.4 21.7L154.4 22.5L162.4 21.8L170.5 23.3L178.5 23.5L186.5 22.6L194.5 24L202.5 22.7L210.6 23.1L218.6 21.5L226.6 21.6L234.6 21.7L242.6 24.4L250.7 25L258.7 22.9L266.7 23.5L274.7 24.3L282.7 24.9L290.8 24L298.8 24.1L306.8 25.6L314.8 23.6L322.9 25.7L330.9 23.2L338.9 23.9L346.9 24.1L354.9 25.7L363 26.2L371 23.8L379 24.4L387 25.3L395 26.3L403.1 24.2L411.1 25.8L419.1 26.3L427.1 26.4L435.1 26L443.2 25.2L451.2 25.7L459.2 26.9L467.2 24.3L475.2 26.9L483.3 26.9L491.3 25.1L499.3 24.6L507.3 27.2L515.4 25.6L523.4 26.9L531.4 26L539.4 27.3L547.4 25.3L555.4 27.9L563.4 28L571.4 27.7L579.4 27.7L587.5 26L595.6 25.6L603.6 26.6L611.6 25.9L619.6 26.9L627.6 26.3L635.7 25.9L643.7 26.6L651.7 27.9L659.7 27.1L667.6 29.1L675.8 26.4L683.8 27.9L691.7 29.4L699.7 29.7L707.8 29.5L715.8 28.7L723.8 29.1L731.8 30L739.9 28.5L747.9 29.5L756 27.3L763.9 30L771.9 28.8L779.9 29.7L788.1 28.2L796.1 28.5L803.2 27.5L804 35.8L801.7 44L803.3 52.3L801.7 60.5L800.4 68.8L800.9 77L802.3 85.3L803.4 91.5L795.4 91.5L787.4 90.7L779.3 93.2L771.3 90L763.3 92.2L755.3 90.8L747.3 91.9L739.2 92.2L731.2 89.8L723.2 92.3L715.2 92.4L707.2 92L699.1 89.9L691.1 91.8L683.1 89.4L675.1 90.2L667 92L659 90.6L651 91.5L643 91.8L635 91L626.9 89.2L618.9 89.6L610.9 88.9L602.9 88.5L594.9 91.1L586.8 89.9L578.8 88.2L570.8 91.1L562.8 89.1L554.8 90.1L546.7 88.5L538.7 88.5L530.7 89.6L522.7 88.4L514.7 90L506.6 88.3L498.6 89.6L490.6 89L482.6 88.7L474.5 87.3L466.5 87.3L458.5 88.9L450.5 86.7L442.5 86.9L434.4 87.8L426.4 86.6L418.4 86.4L410.4 87.2L402.4 88.8L394.3 87.9L386.3 85.8L378.3 88.6L370.3 86.3L362.3 85.5L354.2 87.9L346.2 87.4L338.2 88.4L330.2 85.3L322.2 85.9L314.1 86.2L306.1 86.2L298.1 87.5L290.1 87.7L282 85.9L274 87.4L266 84.6L258 86.1L250 87.5L241.9 85.8L233.9 85.7L225.9 86.3L217.9 86.4L209.9 86.4L201.8 85.9L193.8 85.1L185.8 87L177.8 84.9L169.8 83.7L161.7 85.9L153.7 85.1L145.7 84.4L137.7 85.4L129.7 85.4L121.6 85.6L113.6 83.7L105.6 84L97.6 85.9L89.5 83L81.5 83.2L73.5 84.1L65.5 85.2L57.5 84.8L49.4 85.3L41.4 85.6L34.8 85.5L34 77.3L36.3 69L35.9 60.8L34.1 52.5L37.1 44.3L35.3 36L35.4 27.8Z"/>
+    </svg>
+    <a class="strip__link" href="#">Commercial</a>
+    <a class="strip__link" href="#">Residential</a>
+    <a class="strip__link" href="#">Art Fabrication</a>
+    <a class="strip__link" href="#">About</a>
+    <a class="strip__link" href="#">Contact</a>
+    <a class="strip__call" href="tel:+61394894766">Call 03 9489 4766</a>
   </nav>
 </header>
 
@@ -192,26 +402,214 @@
       <div class="copy" data-l="copy">
         <h1 id="hero-title">Turn a space into&nbsp;a&nbsp;place.</h1>
         <p class="sub">Somewhere to <span class="sub__word">meet at</span></p>
-        <a class="cta" href="#">Creating a place? <span aria-hidden="true">&rarr;</span></a>
+        <a class="cta" href="#close">Creating a place? <span aria-hidden="true">&rarr;</span></a>
       </div>
       <div class="act3" data-l="act3">
         <h2>Every place starts as a&nbsp;space.</h2>
-        <p>Let’s start on yours.</p>
-        <a class="cta" href="#">Tell us about your space <span aria-hidden="true">&rarr;</span></a>
+        <p>This one started as an empty field. Here’s how we made its landmark.</p>
       </div>
       <div class="hint" data-l="hint">Scroll</div>
     </div>
   </section>
+  <!-- Reduced motion: the three acts as plain stacked sections -->
+  <div class="hero-static" aria-hidden="false">
+    <section class="act-static" data-bgimg="assets/static/act1.webp">
+      <div class="copy"><h2 style="margin:0;font:420 clamp(40px,5.6vw,88px)/.98 var(--serif);letter-spacing:-.025em">Turn a space into&nbsp;a&nbsp;place.</h2><p class="sub">Somewhere to meet at</p><a class="cta" href="#close">Creating a place? <span aria-hidden="true">&rarr;</span></a></div>
+    </section>
+    <section class="act-static" data-bgimg="assets/static/act2.webp">
+      <div class="copy"><h2 style="margin:0;font:420 clamp(40px,5.6vw,88px)/.98 var(--serif);letter-spacing:-.025em">Turn a space into&nbsp;a&nbsp;place.</h2><p class="sub">Somewhere to come home to</p><a class="cta" href="#close">Creating a place? <span aria-hidden="true">&rarr;</span></a></div>
+    </section>
+    <section class="act-static" data-bgimg="assets/act3-base.webp">
+      <div class="act3"><h2>Every place starts as a&nbsp;space.</h2><p>This one started as an empty field. Here’s how we made its landmark.</p></div>
+    </section>
+  </div>
 
-  <section class="next">
-    <div class="next__inner">
-      <h2>Without the sculpture, it&rsquo;s just a space.</h2>
-      <p>Placeholder for the next section. The hero above opens on a park, builds a home out of it, then takes that apart too until only the empty block is left.</p>
+  <!-- ==================== Wireframe below the hero ==================== -->
+  <div class="wf">
+
+  <!-- 02 One story, told deeply: pinned, one chapter per scroll -->
+  <section class="story" id="story" aria-label="One story: the Waratah at Olinda">
+    <div class="board">
+      <ol class="dots" aria-label="Chapters">
+        <li><button aria-label="Chapter 1: the space"></button></li><li><button aria-label="Chapter 2: the question"></button></li>
+        <li><button aria-label="Chapter 3: the brief"></button></li><li><button aria-label="Chapter 4: the making"></button></li>
+        <li><button aria-label="Chapter 5: the arrival"></button></li><li><button aria-label="Chapter 6: the five-second moment"></button></li>
+        <li><button aria-label="Chapter 7: your space"></button></li>
+      </ol>
+
+      <article class="chapter ch1" data-bg="#ffffff">
+        <span class="note" style="left:30px;top:872px">Annotation: 02 one story, told deeply · chapter 1 of 7 · the space</span>
+        <div class="b ph part img push" style="--x:30;--y:110;--w:1668;--h:620"><div class="push__in"><span>Before: the empty field at Olinda</span></div></div>
+        <p class="b part txt t44" style="--x:30;--y:760;--w:1105">The Chelsea Australian Garden at Olinda had paths. It didn&rsquo;t have somewhere to arrive.</p>
+        <span class="note" style="left:1296px;top:772px">Pinned: one scroll moves one chapter</span>
+      </article>
+
+      <article class="chapter ch2" data-bg="#fbfbfb">
+        <span class="note" style="left:30px;top:872px">Annotation: Chapter 2 of 7 · the question</span>
+        <p class="b part txt t56" style="--x:30;--y:260;--w:683">The garden needed a reason to walk all the way in.</p>
+        <div class="b ph part img" style="--x:874;--y:110;--w:824;--h:700"><span>The garden path leading to the far end</span></div>
+        <span class="note" style="left:30px;top:560px">Placeholder copy</span>
+      </article>
+
+      <article class="chapter ch3" data-bg="#ffffff">
+        <span class="note" style="left:30px;top:872px">Annotation: Chapter 3 of 7 · the brief</span>
+        <p class="b part txt t36" style="--x:30;--y:200;--w:683">The Waratah was first built in timber for the Chelsea Flower Show in 2013. Olinda needed it to last: rebuilt in Corten steel, outdoors, for good.</p>
+        <p class="b part txt muted" style="--x:30;--y:560;--w:683;font-size:16px">Sculpture design: Decibel Architecture</p>
+        <figure class="b draw part img" style="--x:733;--y:200;--w:965;--h:386">
+          <img data-src="assets/decibel-elevations.webp" data-now alt="Decibel Architecture's elevation drawings of the Waratah, four views">
+          <i style="left:0;transition-delay:.3s"></i><i style="left:25%;transition-delay:.55s"></i><i style="left:50%;transition-delay:.8s"></i><i style="left:75%;transition-delay:1.05s"></i>
+        </figure>
+      </article>
+
+      <article class="chapter ch4" data-bg="#fbfbfb">
+        <span class="note" style="left:30px;top:872px">Annotation: Chapter 4 of 7 · the making (main chapter)</span>
+        <h3 class="b part txt t64" style="--x:30;--y:100;--w:1105">Made in our Fairfield workshop.</h3>
+        <div class="b ph rise small3" style="--x:30;--y:200;--w:542.67;--h:270;--d:.3s"><span>Process: cutting the Corten</span></div>
+        <div class="b ph rise small3" style="--x:592.67;--y:200;--w:542.67;--h:270;--d:.55s"><span>Process: folding and welding the petals</span></div>
+        <div class="b ph rise small3" style="--x:1155.33;--y:200;--w:542.67;--h:270;--d:.8s"><span>Process: engineering and trial fit</span></div>
+        <div class="b ph rise" style="--x:30;--y:490;--w:824;--h:300;--d:1.05s"><span>Timothea and Chris at the workshop bench</span></div>
+        <div class="b rise" style="--x:874;--y:510;--w:824;--d:1.1s">
+          <p style="font-size:28px;font-weight:500">Timothea Jewell and Chris Vassallo</p>
+          <p style="font-size:20px;line-height:1.4;margin-top:14px;max-width:683px">One line on how the Waratah was made to stand outdoors for decades: the design, the steel, the engineering, and the fit.</p>
+          <span class="note" style="position:static;margin-top:22px">Placeholder copy</span>
+        </div>
+        <p class="b rise" style="--x:30;--y:826;--w:1400;font-size:22px;font-weight:500;--d:1.2s">Fairfield workshop &nbsp;·&nbsp; <span data-count="25">25</span>+ years &nbsp;·&nbsp; <span data-count="200">200</span>+ projects &nbsp;·&nbsp; Engineering compliant &nbsp;·&nbsp; Australian made</p>
+      </article>
+
+      <article class="chapter ch5" data-bg="#ffffff">
+        <span class="note" style="left:30px;top:872px">Annotation: Chapter 5 of 7 · the arrival</span>
+        <div class="b ph part img" style="--x:30;--y:110;--w:1668;--h:620"><span>Install day: the Waratah lifted into place</span></div>
+        <p class="b part txt t44" style="--x:30;--y:760;--w:1105">Install day.</p>
+      </article>
+
+      <article class="chapter ch6" data-bg="#fbfbfb">
+        <span class="note" style="left:30px;top:872px">Annotation: Chapter 6 of 7 · the five-second moment</span>
+        <div class="b ph part img" style="--x:30;--y:110;--w:1668;--h:580"><span>People at the Waratah: meeting, sitting, kids pointing</span></div>
+        <h3 class="b words t88" style="--x:30;--y:704;--w:1387">Meet me at the Waratah.</h3>
+        <p class="b part txt muted" style="--x:30;--y:814;--w:1246;font-size:14px;line-height:1.4">The Waratah, Chelsea Australian Garden, Dandenong Ranges Botanic Gardens, Olinda. Sculpture designed by Decibel Architecture. Garden by Phillip Johnson Landscapes with Parks Victoria. Fabricated and installed by Lump.</p>
+      </article>
+
+      <article class="chapter ch7" data-bg="#ffffff">
+        <span class="note" style="left:30px;top:872px">Annotation: Chapter 7 of 7 · hand-off</span>
+        <h3 class="b part txt t64" style="--x:170.67;--y:330;--w:1387;text-align:center">Is your space somewhere to meet at, or somewhere to come home&nbsp;to?</h3>
+        <span class="note" style="left:705px;top:600px">Annotation: leads into the two doors below</span>
+      </article>
     </div>
   </section>
+
+  <!-- 03 Your place: two doors, both visible -->
+  <section class="doors" id="doors">
+    <div class="sec">
+      <span class="note note--label">Annotation: 03 your place · both doors visible, no toggle</span>
+      <div class="doors__grid">
+        <div class="door slide" data-door="public">
+          <h2>Your public space</h2>
+          <p class="door__sub">Somewhere to meet at</p>
+          <div class="cards">
+            <a class="card slide" href="#" data-door="public"><div class="ph"><span>Project photo with people</span></div><h3>Greythorn Story Seat</h3><p>One line on what people now do there.</p></a>
+            <a class="card slide" href="#" data-door="public"><div class="ph"><span>Project photo with people</span></div><h3>The Scar Tree</h3><p>One line on what people now do there.</p></a>
+            <a class="card slide" href="#" data-door="public"><div class="ph"><span>Project photo with people</span></div><h3>The Gathering Circle</h3><p>One line on what people now do there.</p></a>
+          </div>
+          <span class="note">Need one-line "after" for each project</span>
+          <hr>
+          <h3 class="fear">Through consultation, and on time.</h3>
+          <p class="door__body">We work with community groups, cultural advisors and your programme from the first sketch to install day. The engineering is in the story above.</p>
+          <blockquote>“A council or architect client on what people now do at the piece.”<cite>Name, role, organisation</cite></blockquote>
+          <span class="note">Quote to source from client</span>
+          <a class="door__link" href="#" data-door="public">See public projects <span class="arrow">→</span></a>
+        </div>
+        <div class="door slide" data-door="home">
+          <h2>Your home</h2>
+          <p class="door__sub">Somewhere to come home to</p>
+          <div class="cards">
+            <a class="card slide" href="#" data-door="home"><div class="ph"><span>Project photo with people</span></div><h3>Residential project</h3><p>One line on what people now do there.</p></a>
+            <a class="card slide" href="#" data-door="home"><div class="ph"><span>Project photo with people</span></div><h3>Residential project</h3><p>One line on what people now do there.</p></a>
+            <a class="card slide" href="#" data-door="home"><div class="ph"><span>Project photo with people</span></div><h3>Residential project</h3><p>One line on what people now do there.</p></a>
+          </div>
+          <span class="note">Confirm Lump shows renders or mock-ups; else in-situ photos</span>
+          <hr>
+          <h3 class="fear">See it in your space before we make it.</h3>
+          <p class="door__body">We show you the piece in your garden before a single sheet is cut, then make it to last.</p>
+          <blockquote>“A homeowner on what the piece changed about their garden.”<cite>Name, suburb</cite></blockquote>
+          <span class="note">Quote to source from client</span>
+          <a class="door__link" href="#" data-door="home">See home projects <span class="arrow">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 What we do: dense, quick index -->
+  <section class="services" id="services">
+    <div class="sec fadeup">
+      <span class="note note--label">Annotation: 04 what we do · dense, quick index</span>
+      <div class="svc__head"><h2>What we do</h2><span class="note">Check list against Lump’s current services and experience</span></div>
+      <ul class="svc">
+        <li><a href="#"><strong>Custom sculpture <span class="arrow">→</span></strong><span class="muted">One line on what this covers.</span></a></li>
+        <li><a href="#"><strong>Public art <span class="arrow">→</span></strong><span class="muted">One line on what this covers.</span></a></li>
+        <li><a href="#"><strong>Fabrication of your design <span class="arrow">→</span></strong><span class="muted">One line on what this covers.</span></a></li>
+        <li><a href="#"><strong>Structural engineering <span class="arrow">→</span></strong><span class="muted">One line on what this covers.</span></a></li>
+        <li><a href="#"><strong>Installation <span class="arrow">→</span></strong><span class="muted">One line on what this covers.</span></a></li>
+        <li><a href="#"><strong>Project collaboration <span class="arrow">→</span></strong><span class="muted">One line on what this covers.</span></a></li>
+      </ul>
+      <div class="fab">
+        <div><h3>Got a design? We’ll make it.</h3><a class="fab__link" href="#">For architects, designers and artists. Art fabrication <span class="arrow">→</span></a></div>
+        <div><blockquote>A designer or architect client on Lump building their design.</blockquote><span class="note">Optional: designer quote</span></div>
+      </div>
+      <div class="who">
+        <p class="kicker">WHO WE’VE WORKED WITH</p>
+        <p class="names">Parks Victoria &nbsp; · &nbsp; Decibel Architecture &nbsp; · &nbsp; Phillip Johnson Landscapes &nbsp; · &nbsp; RHS Chelsea Flower Show &nbsp; · &nbsp; Council &nbsp; · &nbsp; Council</p>
+        <span class="note">Need council and developer names from Lump</span>
+        <a class="portfolio" href="#">See all 200+ projects <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 Close: form on the homepage -->
+  <section class="close" id="close">
+    <div class="sec">
+      <span class="note note--label">Annotation: 05 close · echoes act 3</span>
+      <div class="close__grid">
+        <div class="close__left">
+          <h2 class="fadeup">Let’s start on yours.</h2>
+          <p class="close__lead">Send us a photo of your space and a few details. We’ll come back to you with ideas.</p>
+          <a class="rating" href="#">★★★★★ &nbsp;4.9 from 000 Google reviews <span class="arrow">→</span></a>
+          <span class="note">Check real rating and review count</span>
+          <br><a class="phone" href="tel:+61394894766">Rather talk? Call 03 9489 4766</a>
+        </div>
+        <form class="form" novalidate>
+          <div>
+            <label for="photo">Photo of your space (optional)</label>
+            <div class="drop" id="drop"><span>Drop a photo or browse</span><input id="photo" type="file" accept="image/*"></div>
+          </div>
+          <fieldset>
+            <legend>Is it public or home?</legend>
+            <span class="note">Pre-filled from the door chosen in section 3</span>
+            <div class="opts">
+              <label><input type="radio" name="kind" value="public"><span>Public space</span></label>
+              <label><input type="radio" name="kind" value="home"><span>Home</span></label>
+            </div>
+          </fieldset>
+          <div><label for="where">Where is it?</label><input id="where" type="text" placeholder="Suburb or site"></div>
+          <div><label for="email">Email</label><input id="email" type="email" placeholder="you@example.com"></div>
+          <button type="submit">Tell us about your space</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="sec">
+      <h2>Footer</h2>
+      <p class="muted" style="font-size:16px">Addresses, contact, nav links, socials.</p>
+      <span class="note">Footer not yet discussed. No Instagram feed here (it goes on About).</span>
+    </div>
+  </footer>
+  </div>
+
 </main>
 
 <div class="badge">Concept preview by Pixel Agency. Not the live site.</div>
+<button class="notes-toggle" type="button" aria-pressed="false">Show notes</button>
 
 <script>
 (() => {
@@ -341,48 +739,96 @@
     }, reduce ? 0 : 450);
   }
 
-  // ---------- One scroll, one act ----------
-  // While the hero is at the top of the page, a scroll (wheel, trackpad, swipe or key) plays the
-  // whole change to the next act at a set pace, and scrolling up plays it back. Scrolling during a
-  // change, and the trackpad's leftover momentum after it, is soaked up so one flick moves one act.
-  // Past act 3 the page scrolls on as normal; back at the top, scrolling up returns through the acts.
+  // ---------- Pinned zones: one scroll, one step ----------
+  // The hero (3 acts) and the story (7 chapters) each pin to the screen. While one is pinned, a
+  // scroll (wheel, trackpad, swipe or key) moves exactly one step at a set pace and never stops
+  // halfway; scrolling up plays it back. Past the last step the page glides on to what comes next,
+  // and scrolling back into a zone from below picks it up at its last step. Everything else on the
+  // page scrolls normally. Scrolling during a step, and a trackpad's leftover momentum after it, is
+  // soaked up so one flick moves one step.
   const ACTS = [0, 0.53, 0.92];               // scroll positions in the plan where each act rests
   const DUR = [2.3, 2.1];                       // seconds for act 1 -> 2 and act 2 -> 3
-  let act = 0, current = 0, anim = null, quietUntil = 0, topSince = performance.now();
+  let act = 0, current = 0, anim = null, quietUntil = 0;
   const root = document.documentElement;
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
   function go(to) {
     const dur = reduce ? 0 : DUR[Math.min(act, to)];
     anim = { from: current, to: ACTS[to], start: performance.now(), dur: dur * 1000 };
     act = to;
   }
-  // Leaving act 3: the hero glides the page down to the next section itself, so it works the
-  // same every time instead of depending on when the browser lets the page scroll again.
-  let exitingUntil = 0, below = false;
-  function exitHero() {
-    exitingUntil = performance.now() + 900;
-    root.classList.remove('hold');
-    document.querySelector('.next').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  const heroZone = {
+    el: hero, n: 3,
+    get step() { return act; },
+    go(to) { go(to); },
+    set(to) { anim = null; act = to; current = ACTS[to]; },
+    busy() { return anim !== null; },
+  };
+  const zones = [heroZone];          // the story adds itself below
+  let active = null, glide = null;
+
+  const docTop = el => el.getBoundingClientRect().top + scrollY;
+  const easeG = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  function glideTo(y, then) {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    y = clamp(Math.round(y), 0, max);
+    const dist = Math.abs(y - scrollY);
+    glide = { from: scrollY, to: y, start: performance.now(), dur: reduce ? 0 : clamp(dist * 0.9, 450, 950), then };
+  }
+  function activate(z, step) {
+    active = z;
+    if (z.step !== step) z.set(step);
+    quietUntil = performance.now() + 350;
+  }
+  // Leave the pinned zone: glide on to the next zone if it's close, otherwise to the next content.
+  function release(z, dir) {
+    active = null;
+    if (dir > 0) {
+      const end = docTop(z.el) + z.el.offsetHeight;
+      const next = zones.find(o => o !== z && docTop(o.el) >= end - 2 && docTop(o.el) - end < innerHeight);
+      if (next) glideTo(docTop(next.el), () => activate(next, 0));
+      else glideTo(end);
+    } else {
+      const start = docTop(z.el);
+      const prev = zones.find(o => o !== z && docTop(o.el) + o.el.offsetHeight <= start + 2 && start - (docTop(o.el) + o.el.offsetHeight) < innerHeight);
+      if (prev) glideTo(docTop(prev.el), () => activate(prev, prev.n - 1));
+      else glideTo(start - innerHeight * 0.85);
+    }
   }
   // dir: 1 down, -1 up. fresh: the start of a new gesture rather than a trackpad's momentum tail.
-  // Returns true if the hero used it (so the page shouldn't scroll).
+  // Returns true if the page handled it (so the browser shouldn't scroll).
   function intent(dir, fresh = true) {
+    if (reduce) return false;
     const now = performance.now();
-    if (now < exitingUntil) return true;                  // gliding to the next section
-    if (scrollY > 2) { below = true; return false; }       // page is below the hero: normal scrolling
-    if (below) { below = false; quietUntil = now + 350; }  // just scrolled back to the top
-    if (anim) return true;                                 // an act change is playing
-    if (now < quietUntil && !fresh) { quietUntil = now + 150; return true; }   // momentum left over
-    if (dir > 0 && act < ACTS.length - 1) { go(act + 1); return true; }
-    if (dir > 0) { exitHero(); return true; }
-    if (dir < 0 && act > 0) {
-      go(act - 1); return true;
+    if (glide) return true;
+    if (active) {
+      if (active.busy()) return true;
+      if (now < quietUntil && !fresh) { quietUntil = now + 150; return true; }
+      const s = active.step;
+      if (dir > 0 && s < active.n - 1) { active.go(s + 1); return true; }
+      if (dir < 0 && s > 0) { active.go(s - 1); return true; }
+      release(active, dir);
+      return true;
+    }
+    // Free scrolling: does this scroll run into a zone?
+    for (const z of zones) {
+      const r = z.el.getBoundingClientRect();
+      if (dir > 0 && r.top > 1 && r.top < innerHeight) { glideTo(scrollY + r.top, () => activate(z, 0)); return true; }
+      if (dir < 0 && r.top < -1 && r.bottom > 0) { glideTo(scrollY + r.top, () => activate(z, z.n - 1)); return true; }
     }
     return false;
   }
+  // Scrollbar drags, swipes with momentum and links can land on a zone without a wheel event.
+  let lastY = scrollY;
   addEventListener('scroll', () => {
-    if (scrollY > 2) topSince = Infinity;
-    else if (topSince === Infinity) { topSince = performance.now(); quietUntil = topSince + 350; }   // back at the top
+    if (reduce || active || glide) { lastY = scrollY; return; }
+    const dir = Math.sign(scrollY - lastY); lastY = scrollY;
+    for (const z of zones) {
+      const t = docTop(z.el), r = t - scrollY;
+      if (Math.abs(r) < 2) { activate(z, dir < 0 ? z.n - 1 : z.step); return; }
+      if (dir > 0 && r < 0 && r > -innerHeight * 0.5) { glideTo(t, () => activate(z, 0)); return; }
+      if (dir < 0 && r > 0 && r < innerHeight * 0.5) { glideTo(t, () => activate(z, z.n - 1)); return; }
+    }
   }, { passive: true });
   // A trackpad keeps sending ever-smaller scrolls after the fingers lift. A new gesture shows up
   // as a pause or a jump in size, which is how a deliberate scroll is told apart from the tail.
@@ -391,40 +837,47 @@
     const now = performance.now(), abs = Math.abs(e.deltaY);
     const fresh = now - lastWheel > 140 || abs > lastAbs * 1.3 + 4;
     lastWheel = now; lastAbs = abs;
-    if (abs < 3 || e.ctrlKey) { if (root.classList.contains('hold')) e.preventDefault(); return; }
+    if (abs < 3 || e.ctrlKey) { if (active || glide) e.preventDefault(); return; }
     if (intent(Math.sign(e.deltaY), fresh)) e.preventDefault();
   }, { passive: false });
   let touchY = null, touchUsed = false;
   addEventListener('touchstart', e => { touchY = e.touches[0].clientY; touchUsed = false; }, { passive: true });
   addEventListener('touchmove', e => {
-    if (touchY === null) return;
+    if (touchY === null || reduce) return;
     const dy = touchY - e.touches[0].clientY;
     if (touchUsed) { e.preventDefault(); return; }
     if (Math.abs(dy) > 24) {
       if (intent(Math.sign(dy))) { touchUsed = true; e.preventDefault(); } else touchY = null;
-    } else if (scrollY <= 2 && (dy > 0 ? act < ACTS.length - 1 : act > 0)) e.preventDefault();
+    } else if (active || glide) e.preventDefault();
   }, { passive: false });
   addEventListener('touchend', () => { touchY = null; });
   addEventListener('keydown', e => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.target.closest('input, textarea, select')) return;
     const down = ['ArrowDown', 'PageDown', ' '].includes(e.key) && !e.shiftKey;
     const up = ['ArrowUp', 'PageUp'].includes(e.key) || (e.key === ' ' && e.shiftKey);
     if (!down && !up) return;
-    if (e.key === ' ' && e.target.closest('a, button, input, textarea')) return;
+    if (e.key === ' ' && e.target.closest('a, button')) return;
     if (intent(down ? 1 : -1)) e.preventDefault();
   });
 
-    function tick(now) {
+  function tick(now) {
     if (anim) {
       const t = anim.dur ? clamp((now - anim.start) / anim.dur, 0, 1) : 1;
       current = anim.from + (anim.to - anim.from) * t;
       if (t >= 1) { anim = null; quietUntil = now + 400; }
     }
-    // Hold the page still until act 3 has settled, so a scroll can only ever move the acts.
-    // Safari doesn't always let a page cancel a scroll, so this doesn't rely on that.
-    const hold = scrollY <= 2 && now >= exitingUntil;
-    scene.classList.toggle('moving', anim !== null);
+    if (glide) {
+      const t = glide.dur ? clamp((now - glide.start) / glide.dur, 0, 1) : 1;
+      scrollTo(0, glide.from + (glide.to - glide.from) * easeG(t));
+      if (t >= 1) { const then = glide.then; glide = null; lastY = scrollY; if (then) then(); else quietUntil = now + 300; }
+    }
+    // While a zone is pinned or the page is gliding, the page itself can't scroll. Safari doesn't
+    // always let a page cancel a scroll, so this doesn't rely on that.
+    if (active && !glide && Math.abs(active.el.getBoundingClientRect().top) > 4) active = null;
+    const hold = !reduce && !!(active || glide);
     if (hold !== root.classList.contains('hold')) root.classList.toggle('hold', hold);
+    scene.classList.toggle('moving', anim !== null);
     apply(current);
     const onScreen = hero.getBoundingClientRect().bottom > 0;
     if (onScreen) tumble(now);
@@ -748,9 +1201,145 @@
     document.querySelector('.birds').style.display = 'none';
   }
 
+  // ---------- 02 One story: seven chapters, pinned ----------
+  const story = document.querySelector('.story');
+  const board = story.querySelector('.board');
+  const chapters = [...story.querySelectorAll('.chapter')];
+  const dotBtns = [...story.querySelectorAll('.dots button')];
+  // Lay the 1728 x 900 wireframe board over the screen, as large as fits
+  function fitBoard() {
+    if (innerWidth < 768) { board.style.transform = ''; board.style.left = board.style.top = ''; return; }
+    // as large as fits, with the content kept clear of the nav strip
+    const s = Math.min(innerWidth / 1728, (innerHeight - 24) / 900);
+    board.style.transform = `scale(${s})`;
+    board.style.left = (innerWidth - 1728 * s) / 2 + 'px';
+    board.style.top = Math.max(110 - 110 * s, (innerHeight - 900 * s) / 2) + 'px';
+  }
+  // Ch 6's landmark line lands word by word
+  const words = story.querySelector('.words');
+  words.innerHTML = words.textContent.split(' ').map((w, i) => `<span style="--d:${(.35 + i * .2).toFixed(2)}s">${w}</span>`).join(' ');
+  // Ch 4's proof line counts up
+  const counters = [...story.querySelectorAll('[data-count]')];
+  function countUp() {
+    if (reduce) return;
+    const t0 = performance.now();
+    const stepC = now => {
+      const t = clamp((now - t0 - 1200) / 1200, 0, 1), e = 1 - Math.pow(1 - t, 3);
+      counters.forEach(c => { c.textContent = Math.round(+c.dataset.count * e); });
+      if (t < 1 && chapter === 3) requestAnimationFrame(stepC);
+    };
+    requestAnimationFrame(stepC);
+  }
+  let chapter = 0, storyBusyUntil = 0;
+  function showChapter(i, instant) {
+    chapter = i;
+    chapters.forEach((c, k) => {
+      if (instant) c.style.transition = 'none';
+      c.classList.toggle('current', k === i);
+      c.classList.toggle('past', k < i);
+    });
+    story.style.backgroundColor = chapters[i].dataset.bg;
+    dotBtns.forEach((b, k) => b.setAttribute('aria-current', String(k === i)));
+    if (i === 3) countUp();
+    if (instant) requestAnimationFrame(() => chapters.forEach(c => { c.style.transition = ''; }));
+    // the landmark line gets a beat before the next scroll is accepted
+    storyBusyUntil = performance.now() + (instant ? 0 : i === 5 ? 900 + 1600 : 900);
+    if (!instant) quietUntil = storyBusyUntil + 400;      // then soak up the flick's momentum
+  }
+  const storyZone = {
+    el: story, n: chapters.length,
+    get step() { return chapter; },
+    go(to) { showChapter(to); },
+    set(to) { showChapter(to, true); },
+    busy() { return performance.now() < storyBusyUntil; },
+  };
+  zones.push(storyZone);
+  dotBtns.forEach((b, k) => b.addEventListener('click', () => {
+    if (active === storyZone) showChapter(k);
+    else glideTo(docTop(story), () => { activate(storyZone, k); showChapter(k); });
+  }));
+  showChapter(0, true);
+  fitBoard();
+  addEventListener('resize', fitBoard);
+
+  // Reduced motion: chapters stack as normal sections, each board scaled to fit
+  if (reduce) {
+    root.classList.add('rm');
+    document.querySelectorAll('[data-bgimg]').forEach(el => { el.style.backgroundImage = `url(${asset(el.dataset.bgimg)})`; });
+    const fitStatic = () => {
+      const s = innerWidth / 1728;
+      chapters.forEach(c => {
+        let w = c.parentElement.classList.contains('chwrap') ? c.parentElement : null;
+        if (!w) { w = document.createElement('div'); w.className = 'chwrap'; c.before(w); w.appendChild(c); }
+        if (innerWidth < 768) { c.style.transform = ''; w.style.height = ''; return; }
+        c.style.transform = `scale(${s})`; w.style.height = 900 * s + 'px';
+        c.style.background = c.dataset.bg; c.classList.add('current');
+      });
+    };
+    fitStatic(); addEventListener('resize', fitStatic);
+  }
+
+  // ---------- 03 doors, 04 services, 05 close: reveals ----------
+  const reveal = new IntersectionObserver(entries => entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    en.target.classList.add('in'); reveal.unobserve(en.target);
+  }), { threshold: 0.2 });
+  // doors slide up, public first, home 0.1s later; their cards follow one after another
+  document.querySelectorAll('.door').forEach((d, i) => {
+    d.style.transitionDelay = i * 0.1 + 's';
+    d.querySelectorAll('.card').forEach((c, k) => { c.style.transitionDelay = (0.2 + i * 0.1 + k * 0.08) + 's'; });
+    const io = new IntersectionObserver(es => es.forEach(en => {
+      if (!en.isIntersecting) return;
+      d.classList.add('in'); d.querySelectorAll('.card').forEach(c => c.classList.add('in')); io.disconnect();
+    }), { threshold: 0.2 });
+    io.observe(d);
+  });
+  document.querySelectorAll('.fadeup').forEach(el => reveal.observe(el));
+
+  // Choosing a door remembers public or home and pre-selects it in the form
+  document.querySelectorAll('a[data-door]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    const r = document.querySelector(`.form input[value="${a.dataset.door}"]`); if (r) r.checked = true;
+  }));
+
+  // Close form: drop a photo to see a thumbnail; sending swaps in a thank-you, in place
+  const form = document.querySelector('.form'), drop = document.getElementById('drop'), file = document.getElementById('photo');
+  const showThumb = f => {
+    if (!f || !f.type.startsWith('image/')) return;
+    let img = drop.querySelector('img'); if (!img) { img = document.createElement('img'); img.alt = 'Your space'; drop.prepend(img); }
+    img.src = URL.createObjectURL(f); drop.querySelector('span').textContent = f.name;
+  };
+  file.addEventListener('change', () => showThumb(file.files[0]));
+  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => showThumb(e.dataTransfer.files[0]));
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const box = document.createElement('div'); box.className = 'thanks fade-in'; box.setAttribute('role', 'status');
+    box.innerHTML = '<h3>Thanks. We’ve got your space.</h3><p>We’ll come back to you with ideas.</p>';
+    form.replaceWith(box);
+  });
+
+  // Show notes toggle
+  const notesBtn = document.querySelector('.notes-toggle');
+  notesBtn.addEventListener('click', () => {
+    const on = root.classList.toggle('notes');
+    notesBtn.textContent = on ? 'Hide notes' : 'Show notes';
+    notesBtn.setAttribute('aria-pressed', String(on));
+  });
+
+  if (!reduce) active = heroZone;
+  // The logo takes you back to the very top, on act 1
+  document.querySelector('.nav__brand').addEventListener('click', e => {
+    e.preventDefault();
+    if (reduce) { scrollTo(0, 0); return; }
+    active = null;
+    heroZone.set(0); storyZone.set(0);
+    glideTo(0, () => activate(heroZone, 0));
+  });
   apply(0);
   requestAnimationFrame(tick);
-  window.__hero = { setProgress(p) { anim = null; current = p; }, step(d) { return intent(d); }, get act() { return act; } };
+  window.__hero = { setProgress(p) { anim = null; current = p; }, step(d) { return intent(d); }, get act() { return act; }, get chapter() { return chapter; }, get zone() { return active === heroZone ? 'hero' : active === storyZone ? 'story' : glide ? 'glide' : 'free'; } };
 })();
 </script>
 
