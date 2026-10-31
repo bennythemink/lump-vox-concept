@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "collage-hero",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5180", "--bind", "127.0.0.1", "--directory", "collage-hero"],
+      "port": 5180
+    }
+  ]
+}
